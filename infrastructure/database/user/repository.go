@@ -2,10 +2,10 @@ package user
 
 import (
 	"context"
-	"kpl-base/domain/user"
-	"kpl-base/infrastructure/database/transaction"
-	"kpl-base/infrastructure/database/validation"
-	"kpl-base/platform/pagination"
+	"givebox/domain/user"
+	"givebox/infrastructure/database/transaction"
+	"givebox/infrastructure/database/validation"
+	"givebox/platform/pagination"
 )
 
 type repository struct {

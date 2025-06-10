@@ -2,9 +2,9 @@ package route
 
 import (
 	"github.com/gin-gonic/gin"
-	"kpl-base/application/service"
-	"kpl-base/presentation/controller"
-	"kpl-base/presentation/middleware"
+	"givebox/application/service"
+	"givebox/presentation/controller"
+	"givebox/presentation/middleware"
 )
 
 func UserRoute(route *gin.Engine, userController controller.UserController, jwtService service.JWTService) {

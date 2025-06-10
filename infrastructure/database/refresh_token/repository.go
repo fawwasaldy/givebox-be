@@ -2,9 +2,9 @@ package refresh_token
 
 import (
 	"context"
-	"kpl-base/domain/refresh_token"
-	"kpl-base/infrastructure/database/transaction"
-	"kpl-base/infrastructure/database/validation"
+	"givebox/domain/refresh_token"
+	"givebox/infrastructure/database/transaction"
+	"givebox/infrastructure/database/validation"
 	"time"
 )
 

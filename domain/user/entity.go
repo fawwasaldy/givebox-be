@@ -1,8 +1,8 @@
 package user
 
 import (
-	"kpl-base/domain/identity"
-	"kpl-base/domain/shared"
+	"givebox/domain/identity"
+	"givebox/domain/shared"
 )
 
 type User struct {

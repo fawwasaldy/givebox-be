@@ -1,9 +1,9 @@
 package migration
 
 import (
+	"givebox/infrastructure/database/refresh_token"
+	"givebox/infrastructure/database/user"
 	"gorm.io/gorm"
-	"kpl-base/infrastructure/database/refresh_token"
-	"kpl-base/infrastructure/database/user"
 )
 
 func Migrate(db *gorm.DB) error {

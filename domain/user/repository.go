@@ -2,7 +2,7 @@ package user
 
 import (
 	"context"
-	"kpl-base/platform/pagination"
+	"givebox/platform/pagination"
 )
 
 type (

@@ -2,9 +2,9 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
-	"kpl-base/application/service"
-	"kpl-base/presentation"
-	"kpl-base/presentation/message"
+	"givebox/application/service"
+	"givebox/presentation"
+	"givebox/presentation/message"
 	"net/http"
 	"strings"
 )

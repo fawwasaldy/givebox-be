@@ -1,4 +1,4 @@
-module kpl-base
+module givebox
 
 go 1.24
 

@@ -3,7 +3,7 @@ package user
 import (
 	"fmt"
 	"github.com/google/uuid"
-	"kpl-base/domain/port"
+	"givebox/domain/port"
 	"mime/multipart"
 )
 

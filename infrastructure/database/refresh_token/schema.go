@@ -2,9 +2,9 @@ package refresh_token
 
 import (
 	"github.com/google/uuid"
-	"kpl-base/domain/identity"
-	"kpl-base/domain/refresh_token"
-	"kpl-base/domain/shared"
+	"givebox/domain/identity"
+	"givebox/domain/refresh_token"
+	"givebox/domain/shared"
 	"time"
 )
 

@@ -2,11 +2,11 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"kpl-base/application/request"
-	"kpl-base/application/service"
-	"kpl-base/platform/pagination"
-	"kpl-base/presentation"
-	"kpl-base/presentation/message"
+	"givebox/application/request"
+	"givebox/application/service"
+	"givebox/platform/pagination"
+	"givebox/presentation"
+	"givebox/presentation/message"
 	"net/http"
 )
 

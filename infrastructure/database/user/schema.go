@@ -2,9 +2,9 @@ package user
 
 import (
 	"github.com/google/uuid"
-	"kpl-base/domain/identity"
-	"kpl-base/domain/shared"
-	"kpl-base/domain/user"
+	"givebox/domain/identity"
+	"givebox/domain/shared"
+	"givebox/domain/user"
 	"time"
 )
 
