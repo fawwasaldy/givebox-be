@@ -3,7 +3,7 @@ package user
 import (
 	"github.com/google/uuid"
 	"givebox/domain/identity"
-	user2 "givebox/domain/profile/user"
+	"givebox/domain/profile/user"
 	"givebox/domain/shared"
 	"time"
 )
@@ -26,7 +26,7 @@ func (User) TableName() string {
 	return "users"
 }
 
-func EntityToSchema(entity user2.User) User {
+func EntityToSchema(entity user.User) User {
 	return User{
 		ID:          entity.ID.ID,
 		Username:    entity.Username,
@@ -38,11 +38,11 @@ func EntityToSchema(entity user2.User) User {
 	}
 }
 
-func SchemaToEntity(schema User) user2.User {
-	return user2.User{
+func SchemaToEntity(schema User) user.User {
+	return user.User{
 		ID:          identity.NewIDFromSchema(schema.ID),
 		Username:    schema.Username,
-		Password:    user2.NewPasswordFromSchema(schema.Password),
+		Password:    user.NewPasswordFromSchema(schema.Password),
 		FullName:    schema.FullName,
 		PhoneNumber: schema.PhoneNumber,
 		Timestamp: shared.Timestamp{

@@ -4,8 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"givebox/application/service"
 	"givebox/command"
-	domain_user "givebox/domain/user"
-	"givebox/infrastructure/adapter/file_storage"
 	"givebox/infrastructure/database/config"
 	infrastructure_user "givebox/infrastructure/database/profile/user"
 	infrastructure_refresh_token "givebox/infrastructure/database/refresh_token"
@@ -56,16 +54,15 @@ func main() {
 
 	jwtService := service.NewJWTService()
 
+	// repositories
 	transactionRepository := transaction.NewRepository(db)
 	userRepository := infrastructure_user.NewRepository(transactionRepository)
 	refreshTokenRepository := infrastructure_refresh_token.NewRepository(transactionRepository)
 
-	fileStorage := file_storage.NewLocalAdapter()
+	// services
+	userService := service.NewUserService(userRepository, refreshTokenRepository, jwtService, transactionRepository)
 
-	userDomainService := domain_user.NewService(fileStorage)
-
-	userService := service.NewUserService(userRepository, refreshTokenRepository, *userDomainService, jwtService, transactionRepository)
-
+	// controllers
 	userController := controller.NewUserController(userService)
 
 	defer config.CloseDatabaseConnection(db)
@@ -77,6 +74,7 @@ func main() {
 	server := gin.Default()
 	server.Use(middleware.CORSMiddleware())
 
+	// routes
 	route.UserRoute(server, userController, jwtService)
 
 	run(server)

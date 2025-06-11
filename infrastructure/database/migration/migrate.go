@@ -1,13 +1,13 @@
 package migration
 
 import (
-	"givebox/domain/chat/conversation"
-	"givebox/domain/chat/message"
-	"givebox/domain/donation/category"
-	"givebox/domain/donation/donated_item"
-	"givebox/domain/donation/donated_item_category"
-	"givebox/domain/donation/image"
-	"givebox/domain/profile/profile_review"
+	"givebox/infrastructure/database/chat/conversation"
+	"givebox/infrastructure/database/chat/message"
+	"givebox/infrastructure/database/donation/category"
+	"givebox/infrastructure/database/donation/donated_item"
+	"givebox/infrastructure/database/donation/donated_item_category"
+	"givebox/infrastructure/database/donation/image"
+	"givebox/infrastructure/database/profile/profile_review"
 	"givebox/infrastructure/database/profile/user"
 	"givebox/infrastructure/database/refresh_token"
 	"gorm.io/gorm"

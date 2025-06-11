@@ -8,7 +8,7 @@ import (
 
 type Category struct {
 	ID   uuid.UUID `gorm:"type:uuid;primary_key;default:uuid_generate_v4();column:id"`
-	Name string    `gorm:"type:varchar(20);not null;uniqueIndex;column:name"`
+	Name string    `gorm:"type:varchar(50);not null;uniqueIndex;column:name"`
 }
 
 type Tabler interface {
