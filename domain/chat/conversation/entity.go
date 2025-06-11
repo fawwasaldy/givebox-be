@@ -6,6 +6,9 @@ import (
 )
 
 type Conversation struct {
-	ID identity.ID
+	ID              identity.ID
+	DonorID         identity.ID
+	RecipientID     identity.ID
+	LatestMessageID identity.ID
 	shared.Timestamp
 }

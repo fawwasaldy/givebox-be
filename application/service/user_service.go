@@ -3,27 +3,26 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
+	"givebox/application"
 	"givebox/application/request"
+	request_profile "givebox/application/request/profile"
 	"givebox/application/response"
+	response_profile "givebox/application/response/profile"
+	"givebox/domain/profile/user"
 	"givebox/domain/refresh_token"
-	"givebox/domain/shared"
-	"givebox/domain/user"
 	"givebox/infrastructure/database/validation"
-	"givebox/platform/pagination"
 	"gorm.io/gorm"
 	"time"
 )
 
 type (
 	UserService interface {
-		Register(ctx context.Context, req request.UserRegister) (response.UserCreate, error)
-		GetAllUsersWithPagination(ctx context.Context, req pagination.Request) (pagination.ResponseWithData, error)
-		GetUserByID(ctx context.Context, userID string) (response.User, error)
-		GetUserByEmail(ctx context.Context, email string) (response.User, error)
-		Update(ctx context.Context, userID string, req request.UserUpdate) (response.UserUpdate, error)
+		Register(ctx context.Context, req request_profile.UserRegister) (response_profile.UserCreate, error)
+		GetUserByID(ctx context.Context, userID string) (response_profile.User, error)
+		GetUserByUsername(ctx context.Context, username string) (response_profile.User, error)
+		Update(ctx context.Context, userID string, req request_profile.UserUpdate) (response_profile.UserUpdate, error)
 		Delete(ctx context.Context, userID string) error
-		Verify(ctx context.Context, req request.UserLogin) (response.RefreshToken, error)
+		Verify(ctx context.Context, req request_profile.UserLogin) (response.RefreshToken, error)
 		RefreshToken(ctx context.Context, req request.RefreshToken) (response.RefreshToken, error)
 		RevokeRefreshToken(ctx context.Context, userID string) error
 	}
@@ -31,7 +30,6 @@ type (
 	userService struct {
 		userRepository         user.Repository
 		refreshTokenRepository refresh_token.Repository
-		userDomainService      user.Service
 		jwtService             JWTService
 		transaction            interface{}
 	}
@@ -40,167 +38,100 @@ type (
 func NewUserService(
 	userRepository user.Repository,
 	refreshTokenRepository refresh_token.Repository,
-	userDomainService user.Service,
 	jwtService JWTService,
 	transaction interface{},
 ) UserService {
 	return &userService{
 		userRepository:         userRepository,
 		refreshTokenRepository: refreshTokenRepository,
-		userDomainService:      userDomainService,
 		jwtService:             jwtService,
 		transaction:            transaction,
 	}
 }
 
-func (s *userService) Register(ctx context.Context, req request.UserRegister) (response.UserCreate, error) {
-	var filename string
-
-	_, flag, err := s.userRepository.CheckEmail(ctx, nil, req.Email)
+func (s *userService) Register(ctx context.Context, req request_profile.UserRegister) (response_profile.UserCreate, error) {
+	_, flag, err := s.userRepository.CheckUsername(ctx, nil, req.Username)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return response.UserCreate{}, err
+		return response_profile.UserCreate{}, err
 	}
 
 	if flag {
-		return response.UserCreate{}, user.ErrorEmailAlreadyExists
-	}
-
-	if req.Image != nil {
-		filename, err = s.userDomainService.UploadImage(req.Image)
-		if err != nil {
-			return response.UserCreate{}, err
-		}
+		return response_profile.UserCreate{}, user.ErrorUsernameAlreadyExists
 	}
 
 	password, err := user.NewPassword(req.Password)
 	if err != nil {
-		return response.UserCreate{}, err
-	}
-	role, err := user.NewRole(user.RoleUser)
-	if err != nil {
-		return response.UserCreate{}, err
-	}
-	imageUrl, err := shared.NewURL(filename)
-	if err != nil {
-		return response.UserCreate{}, err
+		return response_profile.UserCreate{}, err
 	}
 
 	userEntity := user.User{
-		Name:        req.Name,
-		Email:       req.Email,
-		PhoneNumber: req.PhoneNumber,
-		Password:    password,
-		Role:        role,
-		ImageUrl:    imageUrl,
-		IsVerified:  false,
+		Username: req.Username,
+		Password: password,
+		FullName: req.FullName,
 	}
 
 	registeredUser, err := s.userRepository.Register(ctx, nil, userEntity)
 	if err != nil {
-		return response.UserCreate{}, user.ErrorCreateUser
+		return response_profile.UserCreate{}, user.ErrorCreateUser
 	}
 
-	return response.UserCreate{
-		ID:          registeredUser.ID.String(),
-		Name:        registeredUser.Name,
-		Email:       registeredUser.Email,
-		PhoneNumber: registeredUser.PhoneNumber,
-		Role:        registeredUser.Role.Name,
-		ImageUrl:    registeredUser.ImageUrl.Path,
-		IsVerified:  registeredUser.IsVerified,
+	return response_profile.UserCreate{
+		ID:       registeredUser.ID.String(),
+		FullName: registeredUser.FullName,
+		Username: registeredUser.Username,
 	}, nil
 }
 
-func (s *userService) GetAllUsersWithPagination(ctx context.Context, req pagination.Request) (pagination.ResponseWithData, error) {
-	retrievedData, err := s.userRepository.GetAllUsersWithPagination(ctx, nil, req)
-	if err != nil {
-		return pagination.ResponseWithData{}, user.ErrorGetAllUsers
-	}
-
-	data := make([]any, 0, len(retrievedData.Data))
-	for _, retrievedUser := range retrievedData.Data {
-		userEntity, ok := retrievedUser.(user.User)
-		if !ok {
-			return pagination.ResponseWithData{}, errors.New("failed to cast retrieved data to user.User")
-		}
-		data = append(data, response.User{
-			ID:          userEntity.ID.String(),
-			Name:        userEntity.Name,
-			Email:       userEntity.Email,
-			PhoneNumber: userEntity.PhoneNumber,
-			Role:        userEntity.Role.Name,
-			ImageUrl:    userEntity.ImageUrl.Path,
-			IsVerified:  userEntity.IsVerified,
-		})
-	}
-
-	retrievedData = pagination.ResponseWithData{
-		Data:     data,
-		Response: retrievedData.Response,
-	}
-	return retrievedData, nil
-}
-
-func (s *userService) GetUserByID(ctx context.Context, userID string) (response.User, error) {
+func (s *userService) GetUserByID(ctx context.Context, userID string) (response_profile.User, error) {
 	retrievedUser, err := s.userRepository.GetUserByID(ctx, nil, userID)
 	if err != nil {
-		return response.User{}, user.ErrorGetUserById
+		return response_profile.User{}, user.ErrorGetUserById
 	}
 
-	return response.User{
+	return response_profile.User{
 		ID:          retrievedUser.ID.String(),
-		Name:        retrievedUser.Name,
-		Email:       retrievedUser.Email,
+		FullName:    retrievedUser.FullName,
+		Username:    retrievedUser.Username,
 		PhoneNumber: retrievedUser.PhoneNumber,
-		Role:        retrievedUser.Role.Name,
-		ImageUrl:    retrievedUser.ImageUrl.Path,
-		IsVerified:  retrievedUser.IsVerified,
 	}, nil
 }
 
-func (s *userService) GetUserByEmail(ctx context.Context, email string) (response.User, error) {
-	retrievedUser, err := s.userRepository.GetUserByEmail(ctx, nil, email)
+func (s *userService) GetUserByUsername(ctx context.Context, username string) (response_profile.User, error) {
+	retrievedUser, err := s.userRepository.GetUserByUsername(ctx, nil, username)
 	if err != nil {
-		return response.User{}, user.ErrorGetUserByEmail
+		return response_profile.User{}, user.ErrorGetUserByUsername
 	}
 
-	return response.User{
+	return response_profile.User{
 		ID:          retrievedUser.ID.String(),
-		Name:        retrievedUser.Name,
-		Email:       retrievedUser.Email,
+		FullName:    retrievedUser.FullName,
+		Username:    retrievedUser.Username,
 		PhoneNumber: retrievedUser.PhoneNumber,
-		Role:        retrievedUser.Role.Name,
-		ImageUrl:    retrievedUser.ImageUrl.Path,
-		IsVerified:  retrievedUser.IsVerified,
 	}, nil
 }
 
-func (s *userService) Update(ctx context.Context, userID string, req request.UserUpdate) (response.UserUpdate, error) {
+func (s *userService) Update(ctx context.Context, userID string, req request_profile.UserUpdate) (response_profile.UserUpdate, error) {
 	retrievedUser, err := s.userRepository.GetUserByID(ctx, nil, userID)
 	if err != nil {
-		return response.UserUpdate{}, user.ErrorUserNotFound
+		return response_profile.UserUpdate{}, user.ErrorUserNotFound
 	}
 
 	userEntity := user.User{
 		ID:          retrievedUser.ID,
-		Name:        req.Name,
-		Email:       req.Email,
+		FullName:    req.Name,
 		PhoneNumber: req.PhoneNumber,
-		Role:        retrievedUser.Role,
 	}
 
 	updatedUser, err := s.userRepository.Update(ctx, nil, userEntity)
 	if err != nil {
-		return response.UserUpdate{}, user.ErrorUpdateUser
+		return response_profile.UserUpdate{}, user.ErrorUpdateUser
 	}
 
-	return response.UserUpdate{
+	return response_profile.UserUpdate{
 		ID:          updatedUser.ID.String(),
-		Name:        updatedUser.Name,
-		Email:       updatedUser.Email,
+		FullName:    updatedUser.FullName,
+		Username:    updatedUser.Username,
 		PhoneNumber: updatedUser.PhoneNumber,
-		Role:        updatedUser.Role.Name,
-		IsVerified:  updatedUser.IsVerified,
 	}, nil
 }
 
@@ -217,7 +148,7 @@ func (s *userService) Delete(ctx context.Context, userID string) error {
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = RecoveredFromPanic(r)
+			err = application.RecoveredFromPanic(r)
 		}
 		validatedTransaction.CommitOrRollback(ctx, tx, err)
 	}()
@@ -228,7 +159,6 @@ func (s *userService) Delete(ctx context.Context, userID string) error {
 	}
 
 	err = s.userRepository.Delete(ctx, tx, retrievedUser.ID.String())
-	err = fmt.Errorf("test error")
 	if err != nil {
 		return user.ErrorDeleteUser
 	}
@@ -236,7 +166,7 @@ func (s *userService) Delete(ctx context.Context, userID string) error {
 	return nil
 }
 
-func (s *userService) Verify(ctx context.Context, req request.UserLogin) (response.RefreshToken, error) {
+func (s *userService) Verify(ctx context.Context, req request_profile.UserLogin) (response.RefreshToken, error) {
 	validatedTransaction, err := validation.ValidateTransaction(s.transaction)
 	if err != nil {
 		return response.RefreshToken{}, err
@@ -249,14 +179,14 @@ func (s *userService) Verify(ctx context.Context, req request.UserLogin) (respon
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = RecoveredFromPanic(r)
+			err = application.RecoveredFromPanic(r)
 		}
 		validatedTransaction.CommitOrRollback(ctx, tx, err)
 	}()
 
-	retrievedUser, err := s.userRepository.GetUserByEmail(ctx, tx, req.Email)
+	retrievedUser, err := s.userRepository.GetUserByUsername(ctx, tx, req.Username)
 	if err != nil {
-		return response.RefreshToken{}, user.ErrorEmailNotFound
+		return response.RefreshToken{}, user.ErrorUsernameNotFound
 	}
 
 	checkPassword, err := retrievedUser.Password.IsPasswordMatch([]byte(req.Password))
@@ -264,7 +194,7 @@ func (s *userService) Verify(ctx context.Context, req request.UserLogin) (respon
 		return response.RefreshToken{}, err
 	}
 
-	accessToken := s.jwtService.GenerateAccessToken(retrievedUser.ID.String(), retrievedUser.Role.Name)
+	accessToken := s.jwtService.GenerateAccessToken(retrievedUser.ID.String())
 
 	refreshTokenString, expiresAt := s.jwtService.GenerateRefreshToken()
 
@@ -290,7 +220,6 @@ func (s *userService) Verify(ctx context.Context, req request.UserLogin) (respon
 	return response.RefreshToken{
 		AccessToken:  accessToken,
 		RefreshToken: refreshTokenString,
-		Role:         retrievedUser.Role.Name,
 	}, nil
 }
 
@@ -307,13 +236,17 @@ func (s *userService) RefreshToken(ctx context.Context, req request.RefreshToken
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = RecoveredFromPanic(r)
+			err = application.RecoveredFromPanic(r)
 		}
 		validatedTransaction.CommitOrRollback(ctx, tx, err)
 	}()
 
-	retrievedRefreshToken, err := s.refreshTokenRepository.FindByToken(ctx, tx, req.RefreshToken)
+	retrievedRefreshToken, err := s.refreshTokenRepository.FindByUserID(ctx, tx, req.UserID)
 	if err != nil {
+		return response.RefreshToken{}, user.ErrorUserNotFound
+	}
+
+	if !refresh_token.IsRefreshTokenMatch(req.RefreshToken, retrievedRefreshToken.Token) {
 		return response.RefreshToken{}, user.ErrorTokenInvalid
 	}
 
@@ -326,7 +259,7 @@ func (s *userService) RefreshToken(ctx context.Context, req request.RefreshToken
 		return response.RefreshToken{}, user.ErrorUserNotFound
 	}
 
-	accessToken := s.jwtService.GenerateAccessToken(retrievedUser.ID.String(), retrievedUser.Role.Name)
+	accessToken := s.jwtService.GenerateAccessToken(retrievedUser.ID.String())
 
 	refreshTokenString, expiresAt := s.jwtService.GenerateRefreshToken()
 
@@ -352,7 +285,6 @@ func (s *userService) RefreshToken(ctx context.Context, req request.RefreshToken
 	return response.RefreshToken{
 		AccessToken:  accessToken,
 		RefreshToken: refreshTokenString,
-		Role:         retrievedUser.Role.Name,
 	}, nil
 }
 
@@ -369,7 +301,7 @@ func (s *userService) RevokeRefreshToken(ctx context.Context, userID string) err
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = RecoveredFromPanic(r)
+			err = application.RecoveredFromPanic(r)
 		}
 		validatedTransaction.CommitOrRollback(ctx, tx, err)
 	}()

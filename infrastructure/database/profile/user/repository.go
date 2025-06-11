@@ -2,10 +2,9 @@ package user
 
 import (
 	"context"
-	"givebox/domain/user"
+	"givebox/domain/profile/user"
 	"givebox/infrastructure/database/transaction"
 	"givebox/infrastructure/database/validation"
-	"givebox/platform/pagination"
 )
 
 type repository struct {
@@ -36,52 +35,6 @@ func (r *repository) Register(ctx context.Context, tx interface{}, userEntity us
 	return userEntity, nil
 }
 
-func (r *repository) GetAllUsersWithPagination(ctx context.Context, tx interface{}, req pagination.Request) (pagination.ResponseWithData, error) {
-	validatedTransaction, err := validation.ValidateTransaction(tx)
-	if err != nil {
-		return pagination.ResponseWithData{}, err
-	}
-
-	db := validatedTransaction.DB()
-	if db == nil {
-		db = r.db.DB()
-	}
-
-	var userSchemas []User
-	var count int64
-
-	req.Default()
-
-	query := db.WithContext(ctx).Model(&User{})
-	if req.Search != "" {
-		query = query.Where("name LIKE ? OR email LIKE ?", "%"+req.Search+"%", "%"+req.Search+"%")
-	}
-
-	if err = query.Count(&count).Error; err != nil {
-		return pagination.ResponseWithData{}, err
-	}
-
-	if err = query.Scopes(pagination.Paginate(req)).Find(&userSchemas).Error; err != nil {
-		return pagination.ResponseWithData{}, err
-	}
-
-	totalPage := pagination.TotalPage(count, int64(req.PerPage))
-
-	data := make([]any, len(userSchemas))
-	for i, userSchema := range userSchemas {
-		data[i] = SchemaToEntity(userSchema)
-	}
-	return pagination.ResponseWithData{
-		Data: data,
-		Response: pagination.Response{
-			Page:    req.Page,
-			PerPage: req.PerPage,
-			Count:   count,
-			MaxPage: totalPage,
-		},
-	}, err
-}
-
 func (r *repository) GetUserByID(ctx context.Context, tx interface{}, id string) (user.User, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
@@ -102,7 +55,7 @@ func (r *repository) GetUserByID(ctx context.Context, tx interface{}, id string)
 	return userEntity, nil
 }
 
-func (r *repository) GetUserByEmail(ctx context.Context, tx interface{}, email string) (user.User, error) {
+func (r *repository) GetUserByUsername(ctx context.Context, tx interface{}, username string) (user.User, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return user.User{}, err
@@ -114,7 +67,7 @@ func (r *repository) GetUserByEmail(ctx context.Context, tx interface{}, email s
 	}
 
 	var userSchema User
-	if err = db.WithContext(ctx).Where("email = ?", email).Take(&userSchema).Error; err != nil {
+	if err = db.WithContext(ctx).Where("username = ?", username).Take(&userSchema).Error; err != nil {
 		return user.User{}, err
 	}
 
@@ -122,7 +75,7 @@ func (r *repository) GetUserByEmail(ctx context.Context, tx interface{}, email s
 	return userEntity, nil
 }
 
-func (r *repository) CheckEmail(ctx context.Context, tx interface{}, email string) (user.User, bool, error) {
+func (r *repository) CheckUsername(ctx context.Context, tx interface{}, username string) (user.User, bool, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return user.User{}, false, err
@@ -134,7 +87,7 @@ func (r *repository) CheckEmail(ctx context.Context, tx interface{}, email strin
 	}
 
 	var userSchema User
-	if err = db.WithContext(ctx).Where("email = ?", email).Take(&userSchema).Error; err != nil {
+	if err = db.WithContext(ctx).Where("username = ?", username).Take(&userSchema).Error; err != nil {
 		return user.User{}, false, err
 	}
 

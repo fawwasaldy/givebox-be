@@ -3,8 +3,8 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"givebox/application/request"
+	"givebox/application/request/profile"
 	"givebox/application/service"
-	"givebox/platform/pagination"
 	"givebox/presentation"
 	"givebox/presentation/message"
 	"net/http"
@@ -16,7 +16,6 @@ type (
 		Login(ctx *gin.Context)
 		Me(ctx *gin.Context)
 		RefreshToken(ctx *gin.Context)
-		GetAll(ctx *gin.Context)
 		Update(ctx *gin.Context)
 		Delete(ctx *gin.Context)
 	}
@@ -33,7 +32,7 @@ func NewUserController(userService service.UserService) UserController {
 }
 
 func (c *userController) Register(ctx *gin.Context) {
-	var req request.UserRegister
+	var req profile.UserRegister
 	if err := ctx.ShouldBind(&req); err != nil {
 		res := presentation.BuildResponseFailed(message.FailedGetDataFromBody, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
@@ -51,7 +50,7 @@ func (c *userController) Register(ctx *gin.Context) {
 }
 
 func (c *userController) Login(ctx *gin.Context) {
-	var req request.UserLogin
+	var req profile.UserLogin
 	if err := ctx.ShouldBind(&req); err != nil {
 		res := presentation.BuildResponseFailed(message.FailedGetDataFromBody, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
@@ -102,32 +101,8 @@ func (c *userController) RefreshToken(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-func (c *userController) GetAll(ctx *gin.Context) {
-	var req pagination.Request
-	if err := ctx.ShouldBind(&req); err != nil {
-		res := presentation.BuildResponseFailed(message.FailedGetDataFromBody, err.Error(), nil)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
-		return
-	}
-
-	result, err := c.userService.GetAllUsersWithPagination(ctx.Request.Context(), req)
-	if err != nil {
-		res := presentation.BuildResponseFailed(message.FailedGetAllUsers, err.Error(), nil)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
-		return
-	}
-
-	res := presentation.Response{
-		Status:  true,
-		Message: message.SuccessGetAllUsers,
-		Data:    result.Data,
-		Meta:    result.Response,
-	}
-	ctx.JSON(http.StatusOK, res)
-}
-
 func (c *userController) Update(ctx *gin.Context) {
-	var req request.UserUpdate
+	var req profile.UserUpdate
 	if err := ctx.ShouldBind(&req); err != nil {
 		res := presentation.BuildResponseFailed(message.FailedGetDataFromBody, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)

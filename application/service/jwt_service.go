@@ -12,7 +12,7 @@ import (
 
 type (
 	JWTService interface {
-		GenerateAccessToken(userID string, role string) string
+		GenerateAccessToken(userID string) string
 		GenerateRefreshToken() (string, time.Time)
 		ValidateToken(token string) (*jwt.Token, error)
 		GetUserIDByToken(token string) (string, error)
@@ -20,7 +20,6 @@ type (
 
 	jwtCustomClaim struct {
 		UserID string `json:"user_id"`
-		Role   string `json:"role"`
 		jwt.RegisteredClaims
 	}
 
@@ -41,10 +40,9 @@ func NewJWTService() JWTService {
 	}
 }
 
-func (j *jwtService) GenerateAccessToken(userID string, role string) string {
+func (j *jwtService) GenerateAccessToken(userID string) string {
 	claims := jwtCustomClaim{
 		userID,
-		role,
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.accessExpiration)),
 			Issuer:    j.issuer,
