@@ -13,6 +13,7 @@ type DonatedItem struct {
 	DonorID     uuid.UUID `gorm:"type:uuid;not null;column:donor_id"`
 	RecipientID uuid.UUID `gorm:"type:uuid;column:recipient_id"`
 	Status      string    `gorm:"type:varchar(20);not null;column:status"`
+	Name        string    `gorm:"type:varchar(50);not null;column:name"`
 	Description string    `gorm:"type:text;column:description"`
 	Condition   int       `gorm:"type:int;not null;check:condition >= 0 AND condition <= 5;column:condition"`
 	PickCity    string    `gorm:"type:varchar(50);not null;column:pick_city"`
@@ -35,6 +36,7 @@ func EntityToSchema(entity donated_item.DonatedItem) DonatedItem {
 		DonorID:     entity.DonorID.ID,
 		RecipientID: entity.RecipientID.ID,
 		Status:      entity.Status.Status,
+		Name:        entity.Name,
 		Description: entity.Description,
 		Condition:   entity.Condition.Value,
 		PickCity:    entity.PickCity,
@@ -50,6 +52,7 @@ func SchemaToEntity(schema DonatedItem) donated_item.DonatedItem {
 		DonorID:     identity.NewIDFromSchema(schema.DonorID),
 		RecipientID: identity.NewIDFromSchema(schema.RecipientID),
 		Status:      donated_item.NewStatusFromSchema(schema.Status),
+		Name:        schema.Name,
 		Description: schema.Description,
 		Condition:   shared.NewLikertScaleFromSchema(schema.Condition),
 		PickCity:    schema.PickCity,

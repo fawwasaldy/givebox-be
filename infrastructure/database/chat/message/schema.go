@@ -3,6 +3,8 @@ package message
 import (
 	"github.com/google/uuid"
 	"givebox/domain/chat/message"
+	"givebox/domain/identity"
+	"givebox/domain/shared"
 	"time"
 )
 
@@ -31,5 +33,18 @@ func EntityToSchema(message message.Message) Message {
 		Content:        message.Content,
 		CreatedAt:      message.Timestamp.CreatedAt,
 		UpdatedAt:      message.Timestamp.UpdatedAt,
+	}
+}
+
+func SchemaToEntity(schema Message) message.Message {
+	return message.Message{
+		ID:             identity.NewIDFromSchema(schema.ID),
+		ConversationID: identity.NewIDFromSchema(schema.ConversationID),
+		UserID:         identity.NewIDFromSchema(schema.UserID),
+		Content:        schema.Content,
+		Timestamp: shared.Timestamp{
+			CreatedAt: schema.CreatedAt,
+			UpdatedAt: schema.UpdatedAt,
+		},
 	}
 }

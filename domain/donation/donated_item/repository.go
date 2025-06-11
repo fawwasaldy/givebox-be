@@ -21,7 +21,7 @@ type (
 		GetAllDonatedItemsByConditionWithPagination(
 			ctx context.Context,
 			tx interface{},
-			conditionScale int,
+			condition int,
 			req pagination.Request,
 		) (pagination.ResponseWithData, error)
 		GetAllDonatedItemsByStatusWithPagination(
