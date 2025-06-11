@@ -9,7 +9,7 @@ type DonatedItem struct {
 	ID          identity.ID
 	DonorID     identity.ID
 	RecipientID identity.ID
-	status      Status
+	Status      Status
 	Description string
 	Condition   shared.LikertScale
 	PickCity    string
