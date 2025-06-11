@@ -1,0 +1,41 @@
+package conversation
+
+import (
+	"github.com/google/uuid"
+	"givebox/domain/chat/conversation"
+	"givebox/domain/identity"
+	"givebox/domain/shared"
+	"time"
+)
+
+type Conversation struct {
+	ID        uuid.UUID `gorm:"type:uuid;primary_key;default:uuid_generate_v4();column:id"`
+	CreatedAt time.Time `gorm:"type:timestamp with time zone;column:created_at"`
+	UpdatedAt time.Time `gorm:"type:timestamp with time zone;column:updated_at"`
+}
+
+type Tabler interface {
+	TableName() string
+}
+
+func (Conversation) TableName() string {
+	return "conversations"
+}
+
+func EntityToSchema(entity conversation.Conversation) Conversation {
+	return Conversation{
+		ID:        entity.ID.ID,
+		CreatedAt: entity.Timestamp.CreatedAt,
+		UpdatedAt: entity.Timestamp.UpdatedAt,
+	}
+}
+
+func SchemaToEntity(schema Conversation) conversation.Conversation {
+	return conversation.Conversation{
+		ID: identity.NewIDFromSchema(schema.ID),
+		Timestamp: shared.Timestamp{
+			CreatedAt: schema.CreatedAt,
+			UpdatedAt: schema.UpdatedAt,
+		},
+	}
+}

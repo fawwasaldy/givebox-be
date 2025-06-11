@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"givebox/application/request"
 	"givebox/application/response"
+	user2 "givebox/domain/profile/user"
 	"givebox/domain/refresh_token"
 	"givebox/domain/shared"
 	"givebox/domain/user"
@@ -29,7 +30,7 @@ type (
 	}
 
 	userService struct {
-		userRepository         user.Repository
+		userRepository         user2.Repository
 		refreshTokenRepository refresh_token.Repository
 		userDomainService      user.Service
 		jwtService             JWTService
@@ -38,7 +39,7 @@ type (
 )
 
 func NewUserService(
-	userRepository user.Repository,
+	userRepository user2.Repository,
 	refreshTokenRepository refresh_token.Repository,
 	userDomainService user.Service,
 	jwtService JWTService,
@@ -62,7 +63,7 @@ func (s *userService) Register(ctx context.Context, req request.UserRegister) (r
 	}
 
 	if flag {
-		return response.UserCreate{}, user.ErrorEmailAlreadyExists
+		return response.UserCreate{}, user2.ErrorEmailAlreadyExists
 	}
 
 	if req.Image != nil {
@@ -72,7 +73,7 @@ func (s *userService) Register(ctx context.Context, req request.UserRegister) (r
 		}
 	}
 
-	password, err := user.NewPassword(req.Password)
+	password, err := user2.NewPassword(req.Password)
 	if err != nil {
 		return response.UserCreate{}, err
 	}
@@ -85,7 +86,7 @@ func (s *userService) Register(ctx context.Context, req request.UserRegister) (r
 		return response.UserCreate{}, err
 	}
 
-	userEntity := user.User{
+	userEntity := user2.User{
 		Name:        req.Name,
 		Email:       req.Email,
 		PhoneNumber: req.PhoneNumber,
@@ -97,7 +98,7 @@ func (s *userService) Register(ctx context.Context, req request.UserRegister) (r
 
 	registeredUser, err := s.userRepository.Register(ctx, nil, userEntity)
 	if err != nil {
-		return response.UserCreate{}, user.ErrorCreateUser
+		return response.UserCreate{}, user2.ErrorCreateUser
 	}
 
 	return response.UserCreate{
@@ -114,12 +115,12 @@ func (s *userService) Register(ctx context.Context, req request.UserRegister) (r
 func (s *userService) GetAllUsersWithPagination(ctx context.Context, req pagination.Request) (pagination.ResponseWithData, error) {
 	retrievedData, err := s.userRepository.GetAllUsersWithPagination(ctx, nil, req)
 	if err != nil {
-		return pagination.ResponseWithData{}, user.ErrorGetAllUsers
+		return pagination.ResponseWithData{}, user2.ErrorGetAllUsers
 	}
 
 	data := make([]any, 0, len(retrievedData.Data))
 	for _, retrievedUser := range retrievedData.Data {
-		userEntity, ok := retrievedUser.(user.User)
+		userEntity, ok := retrievedUser.(user2.User)
 		if !ok {
 			return pagination.ResponseWithData{}, errors.New("failed to cast retrieved data to user.User")
 		}
@@ -144,7 +145,7 @@ func (s *userService) GetAllUsersWithPagination(ctx context.Context, req paginat
 func (s *userService) GetUserByID(ctx context.Context, userID string) (response.User, error) {
 	retrievedUser, err := s.userRepository.GetUserByID(ctx, nil, userID)
 	if err != nil {
-		return response.User{}, user.ErrorGetUserById
+		return response.User{}, user2.ErrorGetUserById
 	}
 
 	return response.User{
@@ -161,7 +162,7 @@ func (s *userService) GetUserByID(ctx context.Context, userID string) (response.
 func (s *userService) GetUserByEmail(ctx context.Context, email string) (response.User, error) {
 	retrievedUser, err := s.userRepository.GetUserByEmail(ctx, nil, email)
 	if err != nil {
-		return response.User{}, user.ErrorGetUserByEmail
+		return response.User{}, user2.ErrorGetUserByEmail
 	}
 
 	return response.User{
@@ -178,10 +179,10 @@ func (s *userService) GetUserByEmail(ctx context.Context, email string) (respons
 func (s *userService) Update(ctx context.Context, userID string, req request.UserUpdate) (response.UserUpdate, error) {
 	retrievedUser, err := s.userRepository.GetUserByID(ctx, nil, userID)
 	if err != nil {
-		return response.UserUpdate{}, user.ErrorUserNotFound
+		return response.UserUpdate{}, user2.ErrorUserNotFound
 	}
 
-	userEntity := user.User{
+	userEntity := user2.User{
 		ID:          retrievedUser.ID,
 		Name:        req.Name,
 		Email:       req.Email,
@@ -191,7 +192,7 @@ func (s *userService) Update(ctx context.Context, userID string, req request.Use
 
 	updatedUser, err := s.userRepository.Update(ctx, nil, userEntity)
 	if err != nil {
-		return response.UserUpdate{}, user.ErrorUpdateUser
+		return response.UserUpdate{}, user2.ErrorUpdateUser
 	}
 
 	return response.UserUpdate{
@@ -224,13 +225,13 @@ func (s *userService) Delete(ctx context.Context, userID string) error {
 
 	retrievedUser, err := s.userRepository.GetUserByID(ctx, nil, userID)
 	if err != nil {
-		return user.ErrorUserNotFound
+		return user2.ErrorUserNotFound
 	}
 
 	err = s.userRepository.Delete(ctx, tx, retrievedUser.ID.String())
 	err = fmt.Errorf("test error")
 	if err != nil {
-		return user.ErrorDeleteUser
+		return user2.ErrorDeleteUser
 	}
 
 	return nil
@@ -256,7 +257,7 @@ func (s *userService) Verify(ctx context.Context, req request.UserLogin) (respon
 
 	retrievedUser, err := s.userRepository.GetUserByEmail(ctx, tx, req.Email)
 	if err != nil {
-		return response.RefreshToken{}, user.ErrorEmailNotFound
+		return response.RefreshToken{}, user2.ErrorEmailNotFound
 	}
 
 	checkPassword, err := retrievedUser.Password.IsPasswordMatch([]byte(req.Password))
@@ -314,16 +315,16 @@ func (s *userService) RefreshToken(ctx context.Context, req request.RefreshToken
 
 	retrievedRefreshToken, err := s.refreshTokenRepository.FindByToken(ctx, tx, req.RefreshToken)
 	if err != nil {
-		return response.RefreshToken{}, user.ErrorTokenInvalid
+		return response.RefreshToken{}, user2.ErrorTokenInvalid
 	}
 
 	if time.Now().After(retrievedRefreshToken.ExpiresAt) {
-		return response.RefreshToken{}, user.ErrorTokenExpired
+		return response.RefreshToken{}, user2.ErrorTokenExpired
 	}
 
 	retrievedUser, err := s.userRepository.GetUserByID(ctx, tx, retrievedRefreshToken.UserID.String())
 	if err != nil {
-		return response.RefreshToken{}, user.ErrorUserNotFound
+		return response.RefreshToken{}, user2.ErrorUserNotFound
 	}
 
 	accessToken := s.jwtService.GenerateAccessToken(retrievedUser.ID.String(), retrievedUser.Role.Name)
@@ -376,7 +377,7 @@ func (s *userService) RevokeRefreshToken(ctx context.Context, userID string) err
 
 	_, err = s.userRepository.GetUserByID(ctx, tx, userID)
 	if err != nil {
-		return user.ErrorUserNotFound
+		return user2.ErrorUserNotFound
 	}
 
 	if err = s.refreshTokenRepository.DeleteByUserID(ctx, tx, userID); err != nil {
