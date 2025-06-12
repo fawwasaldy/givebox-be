@@ -324,26 +324,38 @@ func (s *donationService) RejectDonatedItem(ctx context.Context, req request_don
 		return response_donation.DonationItemReject{}, donated_item.ErrorInvalidStatusTransition
 	}
 
-	donatedItemEntity.Status, err = donated_item.NewStatus(donated_item.StatusRejected)
+	rejectedDonatedItemEntity := donatedItemEntity
+	rejectedDonatedItemEntity.ID = identity.NewID(identity.NilID.String())
+	rejectedDonatedItemEntity.Status, err = donated_item.NewStatus(donated_item.StatusRejected)
+	if err != nil {
+		return response_donation.DonationItemReject{}, donated_item.ErrorInvalidStatus
+	}
+	rejectedDonatedItem, err := s.donatedItemRepository.Create(ctx, nil, rejectedDonatedItemEntity)
+	if err != nil {
+		return response_donation.DonationItemReject{}, donated_item.ErrorRejectDonatedItem
+	}
+
+	donatedItemEntity.RecipientID = identity.NewID(identity.NilID.String())
+	donatedItemEntity.Status, err = donated_item.NewStatus(donated_item.StatusOpened)
 	if err != nil {
 		return response_donation.DonationItemReject{}, donated_item.ErrorInvalidStatus
 	}
 
-	updatedDonatedItem, err := s.donatedItemRepository.Update(ctx, nil, donatedItemEntity)
+	_, err = s.donatedItemRepository.Update(ctx, nil, donatedItemEntity)
 	if err != nil {
 		return response_donation.DonationItemReject{}, donated_item.ErrorRejectDonatedItem
 	}
 
 	return response_donation.DonationItemReject{
-		ID:          updatedDonatedItem.ID.String(),
-		DonorID:     updatedDonatedItem.DonorID.String(),
-		RecipientID: updatedDonatedItem.RecipientID.String(),
-		Status:      updatedDonatedItem.Status.Status,
-		Name:        updatedDonatedItem.Name,
-		Description: updatedDonatedItem.Description,
-		Condition:   updatedDonatedItem.Condition.Value,
-		PickCity:    updatedDonatedItem.PickCity,
-		PickAddress: updatedDonatedItem.PickAddress,
+		ID:          rejectedDonatedItem.ID.String(),
+		DonorID:     rejectedDonatedItem.DonorID.String(),
+		RecipientID: rejectedDonatedItem.RecipientID.String(),
+		Status:      rejectedDonatedItem.Status.Status,
+		Name:        rejectedDonatedItem.Name,
+		Description: rejectedDonatedItem.Description,
+		Condition:   rejectedDonatedItem.Condition.Value,
+		PickCity:    rejectedDonatedItem.PickCity,
+		PickAddress: rejectedDonatedItem.PickAddress,
 	}, nil
 }
 
