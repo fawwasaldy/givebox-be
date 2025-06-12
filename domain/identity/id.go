@@ -2,13 +2,17 @@ package identity
 
 import "github.com/google/uuid"
 
+var (
+	NilID = uuid.Nil
+)
+
 type ID struct {
 	ID uuid.UUID
 }
 
-func NewID(id uuid.UUID) ID {
+func NewID(id string) ID {
 	return ID{
-		ID: id,
+		ID: uuid.MustParse(id),
 	}
 }
 

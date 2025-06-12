@@ -13,7 +13,7 @@ type ProfileReview struct {
 	SenderID   uuid.UUID `gorm:"type:uuid;not null;column:sender_id"`
 	ReceiverID uuid.UUID `gorm:"type:uuid;not null;column:receiver_id"`
 	Message    string    `gorm:"type:varchar(255);not null;column:message"`
-	Rating     int       `gorm:"type:int;not null;column:rating"`
+	Rating     int       `gorm:"type:int;not null;column:rating;default:0"`
 	CreatedAt  time.Time `gorm:"type:timestamp with time zone;column:created_at"`
 	UpdatedAt  time.Time `gorm:"type:timestamp with time zone;column:updated_at"`
 }

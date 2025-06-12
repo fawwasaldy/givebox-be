@@ -5,6 +5,7 @@ import (
 	"givebox/application/service"
 	"givebox/command"
 	"givebox/infrastructure/database/config"
+	infrastructure_donated_item "givebox/infrastructure/database/donation/donated_item"
 	infrastructure_user "givebox/infrastructure/database/profile/user"
 	infrastructure_refresh_token "givebox/infrastructure/database/refresh_token"
 	"givebox/infrastructure/database/transaction"
@@ -56,14 +57,17 @@ func main() {
 
 	// repositories
 	transactionRepository := transaction.NewRepository(db)
-	userRepository := infrastructure_user.NewRepository(transactionRepository)
 	refreshTokenRepository := infrastructure_refresh_token.NewRepository(transactionRepository)
+	userRepository := infrastructure_user.NewRepository(transactionRepository)
+	donatedItemRepository := infrastructure_donated_item.NewRepository(transactionRepository)
 
 	// services
 	userService := service.NewUserService(userRepository, refreshTokenRepository, jwtService, transactionRepository)
+	donationService := service.NewDonationService(donatedItemRepository, transactionRepository)
 
 	// controllers
 	userController := controller.NewUserController(userService)
+	donationController := controller.NewDonationController(donationService)
 
 	defer config.CloseDatabaseConnection(db)
 
@@ -76,6 +80,7 @@ func main() {
 
 	// routes
 	route.UserRoute(server, userController, jwtService)
+	route.DonationRoute(server, donationController, jwtService)
 
 	run(server)
 }

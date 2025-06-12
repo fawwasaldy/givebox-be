@@ -3,7 +3,7 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"givebox/application/request"
-	"givebox/application/request/profile"
+	request_profile "givebox/application/request/profile"
 	"givebox/application/service"
 	"givebox/presentation"
 	"givebox/presentation/message"
@@ -32,10 +32,11 @@ func NewUserController(userService service.UserService) UserController {
 }
 
 func (c *userController) Register(ctx *gin.Context) {
-	var req profile.UserRegister
+	var req request_profile.UserRegister
 	if err := ctx.ShouldBind(&req); err != nil {
 		res := presentation.BuildResponseFailed(message.FailedGetDataFromBody, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
 	}
 
 	result, err := c.userService.Register(ctx.Request.Context(), req)
@@ -50,7 +51,7 @@ func (c *userController) Register(ctx *gin.Context) {
 }
 
 func (c *userController) Login(ctx *gin.Context) {
-	var req profile.UserLogin
+	var req request_profile.UserLogin
 	if err := ctx.ShouldBind(&req); err != nil {
 		res := presentation.BuildResponseFailed(message.FailedGetDataFromBody, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
@@ -102,7 +103,7 @@ func (c *userController) RefreshToken(ctx *gin.Context) {
 }
 
 func (c *userController) Update(ctx *gin.Context) {
-	var req profile.UserUpdate
+	var req request_profile.UserUpdate
 	if err := ctx.ShouldBind(&req); err != nil {
 		res := presentation.BuildResponseFailed(message.FailedGetDataFromBody, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)

@@ -1,4 +1,4 @@
-package profile
+package request_profile
 
 type (
 	UserRegister struct {
