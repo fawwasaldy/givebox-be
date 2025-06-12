@@ -211,6 +211,23 @@ func (s *donationService) GetDonatedItemByID(ctx context.Context, id string) (re
 }
 
 func (s *donationService) OpenDonatedItem(ctx context.Context, donorID string, req request_donation.DonationItemOpen) (response_donation.DonationItemOpen, error) {
+	validatedTransaction, err := validation.ValidateTransaction(s.transaction)
+	if err != nil {
+		return response_donation.DonationItemOpen{}, err
+	}
+
+	tx, err := validatedTransaction.Begin(ctx)
+	if err != nil {
+		return response_donation.DonationItemOpen{}, err
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			err = application.RecoveredFromPanic(r)
+		}
+		validatedTransaction.CommitOrRollback(ctx, tx, err)
+	}()
+
 	condition, err := shared.NewLikertScale(req.Condition)
 	if err != nil {
 		return response_donation.DonationItemOpen{}, donated_item.ErrorOpenDonatedItem
@@ -230,7 +247,7 @@ func (s *donationService) OpenDonatedItem(ctx context.Context, donorID string, r
 		PickAddress: req.PickAddress,
 	}
 
-	createdDonatedItem, err := s.donatedItemRepository.Create(ctx, nil, donatedItemEntity)
+	createdDonatedItem, err := s.donatedItemRepository.Create(ctx, tx, donatedItemEntity)
 	if err != nil {
 		return response_donation.DonationItemOpen{}, donated_item.ErrorOpenDonatedItem
 	}
@@ -248,7 +265,24 @@ func (s *donationService) OpenDonatedItem(ctx context.Context, donorID string, r
 }
 
 func (s *donationService) RequestDonatedItem(ctx context.Context, recipientID string, req request_donation.DonationItemRequest) (response_donation.DonationItemRequest, error) {
-	donatedItemEntity, err := s.donatedItemRepository.GetDonatedItemByID(ctx, nil, req.ID)
+	validatedTransaction, err := validation.ValidateTransaction(s.transaction)
+	if err != nil {
+		return response_donation.DonationItemRequest{}, err
+	}
+
+	tx, err := validatedTransaction.Begin(ctx)
+	if err != nil {
+		return response_donation.DonationItemRequest{}, err
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			err = application.RecoveredFromPanic(r)
+		}
+		validatedTransaction.CommitOrRollback(ctx, tx, err)
+	}()
+
+	donatedItemEntity, err := s.donatedItemRepository.GetDonatedItemByID(ctx, tx, req.ID)
 	if err != nil {
 		return response_donation.DonationItemRequest{}, donated_item.ErrorDonatedItemNotFound
 	}
@@ -263,7 +297,7 @@ func (s *donationService) RequestDonatedItem(ctx context.Context, recipientID st
 		return response_donation.DonationItemRequest{}, donated_item.ErrorInvalidStatus
 	}
 
-	updatedDonatedItem, err := s.donatedItemRepository.Update(ctx, nil, donatedItemEntity)
+	updatedDonatedItem, err := s.donatedItemRepository.Update(ctx, tx, donatedItemEntity)
 	if err != nil {
 		return response_donation.DonationItemRequest{}, donated_item.ErrorRequestDonatedItem
 	}
@@ -282,7 +316,24 @@ func (s *donationService) RequestDonatedItem(ctx context.Context, recipientID st
 }
 
 func (s *donationService) AcceptDonatedItem(ctx context.Context, req request_donation.DonationItemAccept) (response_donation.DonationItemAccept, error) {
-	donatedItemEntity, err := s.donatedItemRepository.GetDonatedItemByID(ctx, nil, req.ID)
+	validatedTransaction, err := validation.ValidateTransaction(s.transaction)
+	if err != nil {
+		return response_donation.DonationItemAccept{}, err
+	}
+
+	tx, err := validatedTransaction.Begin(ctx)
+	if err != nil {
+		return response_donation.DonationItemAccept{}, err
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			err = application.RecoveredFromPanic(r)
+		}
+		validatedTransaction.CommitOrRollback(ctx, tx, err)
+	}()
+
+	donatedItemEntity, err := s.donatedItemRepository.GetDonatedItemByID(ctx, tx, req.ID)
 	if err != nil {
 		return response_donation.DonationItemAccept{}, donated_item.ErrorDonatedItemNotFound
 	}
@@ -296,7 +347,7 @@ func (s *donationService) AcceptDonatedItem(ctx context.Context, req request_don
 		return response_donation.DonationItemAccept{}, donated_item.ErrorInvalidStatus
 	}
 
-	updatedDonatedItem, err := s.donatedItemRepository.Update(ctx, nil, donatedItemEntity)
+	updatedDonatedItem, err := s.donatedItemRepository.Update(ctx, tx, donatedItemEntity)
 	if err != nil {
 		return response_donation.DonationItemAccept{}, donated_item.ErrorAcceptDonatedItem
 	}
@@ -315,7 +366,24 @@ func (s *donationService) AcceptDonatedItem(ctx context.Context, req request_don
 }
 
 func (s *donationService) RejectDonatedItem(ctx context.Context, req request_donation.DonationItemReject) (response_donation.DonationItemReject, error) {
-	donatedItemEntity, err := s.donatedItemRepository.GetDonatedItemByID(ctx, nil, req.ID)
+	validatedTransaction, err := validation.ValidateTransaction(s.transaction)
+	if err != nil {
+		return response_donation.DonationItemReject{}, err
+	}
+
+	tx, err := validatedTransaction.Begin(ctx)
+	if err != nil {
+		return response_donation.DonationItemReject{}, err
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			err = application.RecoveredFromPanic(r)
+		}
+		validatedTransaction.CommitOrRollback(ctx, tx, err)
+	}()
+
+	donatedItemEntity, err := s.donatedItemRepository.GetDonatedItemByID(ctx, tx, req.ID)
 	if err != nil {
 		return response_donation.DonationItemReject{}, donated_item.ErrorDonatedItemNotFound
 	}
@@ -330,7 +398,7 @@ func (s *donationService) RejectDonatedItem(ctx context.Context, req request_don
 	if err != nil {
 		return response_donation.DonationItemReject{}, donated_item.ErrorInvalidStatus
 	}
-	rejectedDonatedItem, err := s.donatedItemRepository.Create(ctx, nil, rejectedDonatedItemEntity)
+	rejectedDonatedItem, err := s.donatedItemRepository.Create(ctx, tx, rejectedDonatedItemEntity)
 	if err != nil {
 		return response_donation.DonationItemReject{}, donated_item.ErrorRejectDonatedItem
 	}
@@ -341,7 +409,7 @@ func (s *donationService) RejectDonatedItem(ctx context.Context, req request_don
 		return response_donation.DonationItemReject{}, donated_item.ErrorInvalidStatus
 	}
 
-	_, err = s.donatedItemRepository.Update(ctx, nil, donatedItemEntity)
+	_, err = s.donatedItemRepository.Update(ctx, tx, donatedItemEntity)
 	if err != nil {
 		return response_donation.DonationItemReject{}, donated_item.ErrorRejectDonatedItem
 	}
@@ -360,7 +428,24 @@ func (s *donationService) RejectDonatedItem(ctx context.Context, req request_don
 }
 
 func (s *donationService) TakenDonatedItem(ctx context.Context, req request_donation.DonationItemTaken) (response_donation.DonationItemTaken, error) {
-	donatedItemEntity, err := s.donatedItemRepository.GetDonatedItemByID(ctx, nil, req.ID)
+	validatedTransaction, err := validation.ValidateTransaction(s.transaction)
+	if err != nil {
+		return response_donation.DonationItemTaken{}, err
+	}
+
+	tx, err := validatedTransaction.Begin(ctx)
+	if err != nil {
+		return response_donation.DonationItemTaken{}, err
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			err = application.RecoveredFromPanic(r)
+		}
+		validatedTransaction.CommitOrRollback(ctx, tx, err)
+	}()
+
+	donatedItemEntity, err := s.donatedItemRepository.GetDonatedItemByID(ctx, tx, req.ID)
 	if err != nil {
 		return response_donation.DonationItemTaken{}, donated_item.ErrorDonatedItemNotFound
 	}
@@ -374,7 +459,7 @@ func (s *donationService) TakenDonatedItem(ctx context.Context, req request_dona
 		return response_donation.DonationItemTaken{}, donated_item.ErrorInvalidStatus
 	}
 
-	updatedDonatedItem, err := s.donatedItemRepository.Update(ctx, nil, donatedItemEntity)
+	updatedDonatedItem, err := s.donatedItemRepository.Update(ctx, tx, donatedItemEntity)
 	if err != nil {
 		return response_donation.DonationItemTaken{}, donated_item.ErrorTakenDonatedItem
 	}
