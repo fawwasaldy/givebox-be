@@ -5,7 +5,9 @@ import (
 	"givebox/application"
 	request_donation "givebox/application/request/donation"
 	response_donation "givebox/application/response/donation"
+	"givebox/domain/donation/category"
 	"givebox/domain/donation/donated_item"
+	"givebox/domain/donation/donated_item_category"
 	"givebox/domain/donation/image"
 	"givebox/domain/identity"
 	"givebox/domain/shared"
@@ -28,24 +30,32 @@ type (
 		TakenDonatedItem(ctx context.Context, req request_donation.DonationItemTaken) (response_donation.DonationItemTaken, error)
 		UpdateDonatedItem(ctx context.Context, req request_donation.DonationItemUpdate) (response_donation.DonationItemUpdate, error)
 		DeleteDonatedItem(ctx context.Context, id string) error
+		GetAllImagesByDonatedItemID(ctx context.Context, donatedItemID string) ([]response_donation.Image, error)
+		GetAllCategories(ctx context.Context) ([]response_donation.Category, error)
 	}
 
 	donationService struct {
-		donatedItemRepository donated_item.Repository
-		imageRepository       image.Repository
-		transaction           interface{}
+		donatedItemRepository         donated_item.Repository
+		donatedItemCategoryRepository donated_item_category.Repository
+		imageRepository               image.Repository
+		categoryRepository            category.Repository
+		transaction                   interface{}
 	}
 )
 
 func NewDonationService(
 	donatedItemRepository donated_item.Repository,
+	donatedItemCategoryRepository donated_item_category.Repository,
 	imageRepository image.Repository,
+	categoryRepository category.Repository,
 	transaction interface{},
 ) DonationService {
 	return &donationService{
-		donatedItemRepository: donatedItemRepository,
-		imageRepository:       imageRepository,
-		transaction:           transaction,
+		donatedItemRepository:         donatedItemRepository,
+		donatedItemCategoryRepository: donatedItemCategoryRepository,
+		imageRepository:               imageRepository,
+		categoryRepository:            categoryRepository,
+		transaction:                   transaction,
 	}
 }
 
@@ -254,6 +264,17 @@ func (s *donationService) OpenDonatedItem(ctx context.Context, donorID string, r
 	createdDonatedItem, err := s.donatedItemRepository.Create(ctx, tx, donatedItemEntity)
 	if err != nil {
 		return response_donation.DonationItemOpen{}, donated_item.ErrorOpenDonatedItem
+	}
+
+	for _, reqCategory := range req.Categories {
+		donatedItemCategoryEntity := donated_item_category.DonatedItemCategory{
+			DonatedItemID: createdDonatedItem.ID,
+			CategoryID:    identity.NewID(reqCategory),
+		}
+
+		if _, err = s.donatedItemCategoryRepository.Create(ctx, tx, donatedItemCategoryEntity); err != nil {
+			return response_donation.DonationItemOpen{}, donated_item.ErrorOpenDonatedItem
+		}
 	}
 
 	for _, reqImage := range req.Images {
@@ -554,4 +575,39 @@ func (s *donationService) DeleteDonatedItem(ctx context.Context, id string) erro
 	}
 
 	return nil
+}
+
+func (s *donationService) GetAllImagesByDonatedItemID(ctx context.Context, donatedItemID string) ([]response_donation.Image, error) {
+	retrievedImages, err := s.imageRepository.GetAllImagesByDonatedItemID(ctx, nil, donatedItemID)
+	if err != nil {
+		return nil, image.ErrorGetAllImages
+	}
+
+	data := make([]response_donation.Image, 0, len(retrievedImages))
+	for _, retrievedImage := range retrievedImages {
+		data = append(data, response_donation.Image{
+			ID:            retrievedImage.ID.String(),
+			DonatedItemID: retrievedImage.DonatedItemID.String(),
+			ImageURL:      retrievedImage.ImageURL.Path,
+		})
+	}
+
+	return data, nil
+}
+
+func (s *donationService) GetAllCategories(ctx context.Context) ([]response_donation.Category, error) {
+	retrievedCategories, err := s.categoryRepository.GetAllCategories(ctx, nil)
+	if err != nil {
+		return nil, category.ErrorGetAllCategories
+	}
+
+	data := make([]response_donation.Category, 0, len(retrievedCategories))
+	for _, retrievedCategory := range retrievedCategories {
+		data = append(data, response_donation.Category{
+			ID:   retrievedCategory.ID.String(),
+			Name: retrievedCategory.Name,
+		})
+	}
+
+	return data, nil
 }

@@ -8,6 +8,7 @@ type (
 		PickCity    string   `json:"pick_city" form:"pick_city" binding:"required,min=2,max=50"`
 		PickAddress string   `json:"pick_address" form:"pick_address" binding:"required,min=5,max=255"`
 		Images      []string `json:"images" form:"images" binding:"omitempty,dive,uri,min=5,max=255"`
+		Categories  []string `json:"categories" form:"categories" binding:"required,dive,uuid"`
 	}
 
 	DonationItemRequest struct {

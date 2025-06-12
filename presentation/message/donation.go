@@ -1,6 +1,7 @@
 package message
 
 const (
+	// Failed
 	FailedGetAllDonatedItemsWithPagination             = "Failed to get all donated items with pagination"
 	FailedGetAllDonatedItemsByCategoryIDWithPagination = "Failed to get all donated items by category ID with pagination"
 	FailedGetAllDonatedItemsByConditionWithPagination  = "Failed to get all donated items by condition with pagination"
@@ -14,7 +15,10 @@ const (
 	FailedTakenDonatedItem                             = "Failed to mark donated item as taken"
 	FailedUpdateDonatedItem                            = "Failed to update donated item"
 	FailedDeleteDonatedItem                            = "Failed to delete donated item"
+	FailedGetAllImagesByDonatedItemID                  = "Failed to get all images by donated item ID"
+	FailedGetAllCategories                             = "Failed to get all categories"
 
+	// Success
 	SuccessGetAllDonatedItemsWithPagination             = "Successfully retrieved all donated items with pagination"
 	SuccessGetAllDonatedItemsByCategoryIDWithPagination = "Successfully retrieved all donated items by category ID with pagination"
 	SuccessGetAllDonatedItemsByConditionWithPagination  = "Successfully retrieved all donated items by condition with pagination"
@@ -28,4 +32,6 @@ const (
 	SuccessTakenDonatedItem                             = "Successfully marked donated item as taken"
 	SuccessUpdateDonatedItem                            = "Successfully updated donated item"
 	SuccessDeleteDonatedItem                            = "Successfully deleted donated item"
+	SuccessGetAllImagesByDonatedItemID                  = "Successfully retrieved all images by donated item ID"
+	SuccessGetAllCategories                             = "Successfully retrieved all categories"
 )

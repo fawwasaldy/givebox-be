@@ -23,5 +23,7 @@ func DonationRoute(route *gin.Engine, donationController controller.DonationCont
 		donationGroup.POST("/donated-item/taken", middleware.Authenticate(jwtService), donationController.TakenDonatedItem)
 		donationGroup.PUT("/donated-item", middleware.Authenticate(jwtService), donationController.UpdateDonatedItem)
 		donationGroup.DELETE("/donated-item/:id", middleware.Authenticate(jwtService), donationController.DeleteDonatedItem)
+		donationGroup.GET("/donated-item/image/:donated_item_id", donationController.GetAllImagesByDonatedItemID)
+		donationGroup.GET("/category", donationController.GetAllCategories)
 	}
 }
