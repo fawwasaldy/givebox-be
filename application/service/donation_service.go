@@ -6,6 +6,7 @@ import (
 	request_donation "givebox/application/request/donation"
 	response_donation "givebox/application/response/donation"
 	"givebox/domain/donation/donated_item"
+	"givebox/domain/donation/donated_item_category"
 	"givebox/domain/donation/image"
 	"givebox/domain/identity"
 	"givebox/domain/shared"
@@ -31,21 +32,24 @@ type (
 	}
 
 	donationService struct {
-		donatedItemRepository donated_item.Repository
-		imageRepository       image.Repository
-		transaction           interface{}
+		donatedItemRepository         donated_item.Repository
+		donatedItemCategoryRepository donated_item_category.Repository
+		imageRepository               image.Repository
+		transaction                   interface{}
 	}
 )
 
 func NewDonationService(
 	donatedItemRepository donated_item.Repository,
+	donatedItemCategoryRepository donated_item_category.Repository,
 	imageRepository image.Repository,
 	transaction interface{},
 ) DonationService {
 	return &donationService{
-		donatedItemRepository: donatedItemRepository,
-		imageRepository:       imageRepository,
-		transaction:           transaction,
+		donatedItemRepository:         donatedItemRepository,
+		donatedItemCategoryRepository: donatedItemCategoryRepository,
+		imageRepository:               imageRepository,
+		transaction:                   transaction,
 	}
 }
 
@@ -254,6 +258,17 @@ func (s *donationService) OpenDonatedItem(ctx context.Context, donorID string, r
 	createdDonatedItem, err := s.donatedItemRepository.Create(ctx, tx, donatedItemEntity)
 	if err != nil {
 		return response_donation.DonationItemOpen{}, donated_item.ErrorOpenDonatedItem
+	}
+
+	for _, reqCategory := range req.Categories {
+		donatedItemCategoryEntity := donated_item_category.DonatedItemCategory{
+			DonatedItemID: createdDonatedItem.ID,
+			CategoryID:    identity.NewID(reqCategory),
+		}
+
+		if _, err = s.donatedItemCategoryRepository.Create(ctx, tx, donatedItemCategoryEntity); err != nil {
+			return response_donation.DonationItemOpen{}, donated_item.ErrorOpenDonatedItem
+		}
 	}
 
 	for _, reqImage := range req.Images {

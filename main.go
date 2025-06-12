@@ -6,6 +6,7 @@ import (
 	"givebox/command"
 	"givebox/infrastructure/database/config"
 	infrastructure_donated_item "givebox/infrastructure/database/donation/donated_item"
+	infrastructure_donated_item_category "givebox/infrastructure/database/donation/donated_item_category"
 	infrastructure_image "givebox/infrastructure/database/donation/image"
 	infrastructure_user "givebox/infrastructure/database/profile/user"
 	infrastructure_refresh_token "givebox/infrastructure/database/refresh_token"
@@ -61,11 +62,12 @@ func main() {
 	refreshTokenRepository := infrastructure_refresh_token.NewRepository(transactionRepository)
 	userRepository := infrastructure_user.NewRepository(transactionRepository)
 	donatedItemRepository := infrastructure_donated_item.NewRepository(transactionRepository)
+	donatedItemCategoryRepository := infrastructure_donated_item_category.NewRepository(transactionRepository)
 	imageRepository := infrastructure_image.NewRepository(transactionRepository)
 
 	// services
 	userService := service.NewUserService(userRepository, refreshTokenRepository, jwtService, transactionRepository)
-	donationService := service.NewDonationService(donatedItemRepository, imageRepository, transactionRepository)
+	donationService := service.NewDonationService(donatedItemRepository, donatedItemCategoryRepository, imageRepository, transactionRepository)
 
 	// controllers
 	userController := controller.NewUserController(userService)
