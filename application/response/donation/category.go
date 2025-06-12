@@ -1,0 +1,6 @@
+package response_donation
+
+type Category struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}

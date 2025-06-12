@@ -26,6 +26,8 @@ type (
 		TakenDonatedItem(ctx *gin.Context)
 		UpdateDonatedItem(ctx *gin.Context)
 		DeleteDonatedItem(ctx *gin.Context)
+		GetAllImagesByDonatedItemID(ctx *gin.Context)
+		GetAllCategories(ctx *gin.Context)
 	}
 
 	donationController struct {
@@ -307,5 +309,30 @@ func (c *donationController) DeleteDonatedItem(ctx *gin.Context) {
 	}
 
 	res := presentation.BuildResponseSuccess(message.SuccessDeleteDonatedItem, nil)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *donationController) GetAllImagesByDonatedItemID(ctx *gin.Context) {
+	id := ctx.Param("donated_item_id")
+	images, err := c.donationService.GetAllImagesByDonatedItemID(ctx.Request.Context(), id)
+	if err != nil {
+		res := presentation.BuildResponseFailed(message.FailedGetAllImagesByDonatedItemID, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := presentation.BuildResponseSuccess(message.SuccessGetAllImagesByDonatedItemID, images)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *donationController) GetAllCategories(ctx *gin.Context) {
+	categories, err := c.donationService.GetAllCategories(ctx.Request.Context())
+	if err != nil {
+		res := presentation.BuildResponseFailed(message.FailedGetAllCategories, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := presentation.BuildResponseSuccess(message.SuccessGetAllCategories, categories)
 	ctx.JSON(http.StatusOK, res)
 }
