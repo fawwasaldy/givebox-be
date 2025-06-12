@@ -1,0 +1,31 @@
+package message
+
+const (
+	FailedGetAllDonatedItemsWithPagination             = "Failed to get all donated items with pagination"
+	FailedGetAllDonatedItemsByCategoryIDWithPagination = "Failed to get all donated items by category ID with pagination"
+	FailedGetAllDonatedItemsByConditionWithPagination  = "Failed to get all donated items by condition with pagination"
+	FailedGetAllDonatedItemsByStatusWithPagination     = "Failed to get all donated items by status with pagination"
+	FailedGetAllDonatedItemsBeforeDateWithPagination   = "Failed to get all donated items before date with pagination"
+	FailedGetDonatedItemByID                           = "Failed to get donated item by ID"
+	FailedOpenDonatedItem                              = "Failed to open donated item"
+	FailedRequestDonatedItem                           = "Failed to request donated item"
+	FailedAcceptDonatedItem                            = "Failed to accept donated item"
+	FailedRejectDonatedItem                            = "Failed to reject donated item"
+	FailedTakenDonatedItem                             = "Failed to mark donated item as taken"
+	FailedUpdateDonatedItem                            = "Failed to update donated item"
+	FailedDeleteDonatedItem                            = "Failed to delete donated item"
+
+	SuccessGetAllDonatedItemsWithPagination             = "Successfully retrieved all donated items with pagination"
+	SuccessGetAllDonatedItemsByCategoryIDWithPagination = "Successfully retrieved all donated items by category ID with pagination"
+	SuccessGetAllDonatedItemsByConditionWithPagination  = "Successfully retrieved all donated items by condition with pagination"
+	SuccessGetAllDonatedItemsByStatusWithPagination     = "Successfully retrieved all donated items by status with pagination"
+	SuccessGetAllDonatedItemsBeforeDateWithPagination   = "Successfully retrieved all donated items before date with pagination"
+	SuccessGetDonatedItemByID                           = "Successfully retrieved donated item by ID"
+	SuccessOpenDonatedItem                              = "Successfully opened donated item"
+	SuccessRequestDonatedItem                           = "Successfully requested donated item"
+	SuccessAcceptDonatedItem                            = "Successfully accepted donated item"
+	SuccessRejectDonatedItem                            = "Successfully rejected donated item"
+	SuccessTakenDonatedItem                             = "Successfully marked donated item as taken"
+	SuccessUpdateDonatedItem                            = "Successfully updated donated item"
+	SuccessDeleteDonatedItem                            = "Successfully deleted donated item"
+)

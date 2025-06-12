@@ -1,4 +1,4 @@
-package profile
+package response_profile
 
 type (
 	User struct {
