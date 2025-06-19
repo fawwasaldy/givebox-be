@@ -17,10 +17,10 @@ func NewRepository(db *transaction.Repository) donated_item_recipient.Repository
 	}
 }
 
-func (r repository) Create(ctx context.Context, tx interface{}, donatedItemCategoryEntity donated_item_recipient.DonatedItemCategory) (donated_item_recipient.DonatedItemCategory, error) {
+func (r repository) Create(ctx context.Context, tx interface{}, donatedItemCategoryEntity donated_item_recipient.DonatedItemRecipient) (donated_item_recipient.DonatedItemRecipient, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
-		return donated_item_recipient.DonatedItemCategory{}, err
+		return donated_item_recipient.DonatedItemRecipient{}, err
 	}
 
 	db := validatedTransaction.DB()
@@ -30,7 +30,7 @@ func (r repository) Create(ctx context.Context, tx interface{}, donatedItemCateg
 
 	donatedItemCategorySchema := EntityToSchema(donatedItemCategoryEntity)
 	if err = db.WithContext(ctx).Create(&donatedItemCategorySchema).Error; err != nil {
-		return donated_item_recipient.DonatedItemCategory{}, err
+		return donated_item_recipient.DonatedItemRecipient{}, err
 	}
 
 	donatedItemCategoryEntity = SchemaToEntity(donatedItemCategorySchema)

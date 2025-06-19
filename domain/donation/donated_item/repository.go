@@ -25,6 +25,7 @@ type (
 			req pagination.Request,
 		) (pagination.ResponseWithData, error)
 		GetDonatedItemByID(ctx context.Context, tx interface{}, id string) (DonatedItem, error)
+		CountDonatedItemsByCategoryID(ctx context.Context, tx interface{}, categoryID string) (int64, error)
 		Create(ctx context.Context, tx interface{}, donatedItemEntity DonatedItem) (DonatedItem, error)
 		Update(ctx context.Context, tx interface{}, donatedItemEntity DonatedItem) (DonatedItem, error)
 	}

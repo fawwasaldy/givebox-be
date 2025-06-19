@@ -10,5 +10,9 @@ type (
 			ctx context.Context,
 			tx interface{},
 		) ([]Category, error)
+		GetSixCategoriesByMostOpenedDonatedItems(
+			ctx context.Context,
+			tx interface{},
+		) ([]Category, error)
 	}
 )

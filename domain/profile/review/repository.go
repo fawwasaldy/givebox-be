@@ -18,5 +18,5 @@ type Repository interface {
 		recipientID string,
 		req pagination.Request,
 	) (pagination.ResponseWithData, error)
-	Create(ctx context.Context, tx interface{}, profileReviewEntity Review) (Review, error)
+	Create(ctx context.Context, tx interface{}, reviewEntity Review) (Review, error)
 }
