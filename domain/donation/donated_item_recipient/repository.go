@@ -1,4 +1,4 @@
-package donated_item_category
+package donated_item_recipient
 
 import "context"
 

@@ -1,8 +1,8 @@
-package profile_review
+package review
 
 import (
 	"context"
-	"givebox/domain/profile/profile_review"
+	"givebox/domain/profile/review"
 	"givebox/infrastructure/database/transaction"
 	"givebox/infrastructure/database/validation"
 	"givebox/platform/pagination"
@@ -12,7 +12,7 @@ type repository struct {
 	db *transaction.Repository
 }
 
-func NewRepository(db *transaction.Repository) profile_review.Repository {
+func NewRepository(db *transaction.Repository) review.Repository {
 	return &repository{db: db}
 }
 
@@ -27,12 +27,12 @@ func (r repository) GetAllProfileReviewsByReceiverIDWithPagination(ctx context.C
 		db = r.db.DB()
 	}
 
-	var profileReviewSchemas []ProfileReview
+	var profileReviewSchemas []Review
 	var count int64
 
 	req.Default()
 
-	query := db.WithContext(ctx).Model(&ProfileReview{}).
+	query := db.WithContext(ctx).Model(&Review{}).
 		Where("receiver_id = ?", receiverID)
 	if req.Search != "" {
 		query = query.Where("message ILIKE ?", "%"+req.Search+"%")
@@ -63,10 +63,10 @@ func (r repository) GetAllProfileReviewsByReceiverIDWithPagination(ctx context.C
 	}, nil
 }
 
-func (r repository) Create(ctx context.Context, tx interface{}, profileReviewEntity profile_review.ProfileReview) (profile_review.ProfileReview, error) {
+func (r repository) Create(ctx context.Context, tx interface{}, profileReviewEntity review.Review) (review.Review, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
-		return profile_review.ProfileReview{}, err
+		return review.Review{}, err
 	}
 
 	db := validatedTransaction.DB()
@@ -76,7 +76,7 @@ func (r repository) Create(ctx context.Context, tx interface{}, profileReviewEnt
 
 	profileReviewSchema := EntityToSchema(profileReviewEntity)
 	if err = db.WithContext(ctx).Create(&profileReviewSchema).Error; err != nil {
-		return profile_review.ProfileReview{}, err
+		return review.Review{}, err
 	}
 
 	profileReviewEntity = SchemaToEntity(profileReviewSchema)

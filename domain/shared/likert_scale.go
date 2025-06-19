@@ -3,12 +3,11 @@ package shared
 import "fmt"
 
 const (
-	VeryPoor = iota
+	VeryPoor = iota + 1
 	Poor
 	Fair
 	Good
 	VeryGood
-	Excellent
 )
 
 var (
@@ -18,7 +17,6 @@ var (
 		{Value: Fair},
 		{Value: Good},
 		{Value: VeryGood},
-		{Value: Excellent},
 	}
 )
 

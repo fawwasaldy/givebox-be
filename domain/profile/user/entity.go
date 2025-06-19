@@ -7,9 +7,11 @@ import (
 
 type User struct {
 	ID          identity.ID
-	Username    string
+	Biography   string
+	Name        Name
+	Email       string
 	Password    Password
-	FullName    string
 	PhoneNumber string
+	City        string
 	shared.Timestamp
 }

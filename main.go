@@ -7,7 +7,7 @@ import (
 	"givebox/infrastructure/database/config"
 	infrastructure_category "givebox/infrastructure/database/donation/category"
 	infrastructure_donated_item "givebox/infrastructure/database/donation/donated_item"
-	infrastructure_donated_item_category "givebox/infrastructure/database/donation/donated_item_category"
+	infrastructure_donated_item_category "givebox/infrastructure/database/donation/donated_item_recipient"
 	infrastructure_image "givebox/infrastructure/database/donation/image"
 	infrastructure_user "givebox/infrastructure/database/profile/user"
 	infrastructure_refresh_token "givebox/infrastructure/database/refresh_token"

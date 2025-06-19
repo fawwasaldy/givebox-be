@@ -1,4 +1,4 @@
-package profile_review
+package review
 
 import (
 	"context"
@@ -12,5 +12,5 @@ type Repository interface {
 		receiverID string,
 		req pagination.Request,
 	) (pagination.ResponseWithData, error)
-	Create(ctx context.Context, tx interface{}, profileReviewEntity ProfileReview) (ProfileReview, error)
+	Create(ctx context.Context, tx interface{}, profileReviewEntity Review) (Review, error)
 }
