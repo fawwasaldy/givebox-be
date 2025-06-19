@@ -6,10 +6,16 @@ import (
 )
 
 type Repository interface {
-	GetAllProfileReviewsByReceiverIDWithPagination(
+	GetAllReviewsByDonorIDWithPagination(
 		ctx context.Context,
 		tx interface{},
-		receiverID string,
+		donorID string,
+		req pagination.Request,
+	) (pagination.ResponseWithData, error)
+	GetAllReviewsByRecipientIDWithPagination(
+		ctx context.Context,
+		tx interface{},
+		recipientID string,
 		req pagination.Request,
 	) (pagination.ResponseWithData, error)
 	Create(ctx context.Context, tx interface{}, profileReviewEntity Review) (Review, error)
