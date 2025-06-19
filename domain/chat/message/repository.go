@@ -13,6 +13,4 @@ type Repository interface {
 		req pagination.Request,
 	) (pagination.ResponseWithData, error)
 	Create(ctx context.Context, tx interface{}, messageEntity Message) (Message, error)
-	Update(ctx context.Context, tx interface{}, messageEntity Message) (Message, error)
-	Delete(ctx context.Context, tx interface{}, id string) error
 }

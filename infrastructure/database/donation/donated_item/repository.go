@@ -110,7 +110,7 @@ func (r repository) GetAllDonatedItemsByCategoryIDWithPagination(ctx context.Con
 	}, nil
 }
 
-func (r repository) GetAllDonatedItemsByConditionWithPagination(ctx context.Context, tx interface{}, condition int, req pagination.Request) (pagination.ResponseWithData, error) {
+func (r repository) GetAllDonatedItemsByCityWithPagination(ctx context.Context, tx interface{}, city string, req pagination.Request) (pagination.ResponseWithData, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return pagination.ResponseWithData{}, err
@@ -126,104 +126,9 @@ func (r repository) GetAllDonatedItemsByConditionWithPagination(ctx context.Cont
 
 	req.Default()
 
-	query := db.WithContext(ctx).Model(&DonatedItem{}).
-		Where("condition = ?", condition)
+	query := db.WithContext(ctx).Model(&DonatedItem{}).Where("pick_city ILIKE ?", "%"+city+"%")
 	if req.Search != "" {
-		query = query.Where("name ILIKE ? OR description ILIKE ? OR pick_city ILIKE ? OR pick_address ILIKE ?", "%"+req.Search+"%", "%"+req.Search+"%", "%"+req.Search+"%", "%"+req.Search+"%")
-	}
-
-	if err = query.Count(&count).Error; err != nil {
-		return pagination.ResponseWithData{}, err
-	}
-
-	if err = query.Scopes(pagination.Paginate(req)).Find(&donatedItemSchemas).Error; err != nil {
-		return pagination.ResponseWithData{}, err
-	}
-
-	totalPage := pagination.TotalPage(count, int64(req.PerPage))
-
-	donatedItemEntities := make([]any, len(donatedItemSchemas))
-	for i, donatedItemSchema := range donatedItemSchemas {
-		donatedItemEntities[i] = SchemaToEntity(donatedItemSchema)
-	}
-	return pagination.ResponseWithData{
-		Data: donatedItemEntities,
-		Response: pagination.Response{
-			Page:    req.Page,
-			PerPage: req.PerPage,
-			Count:   count,
-			MaxPage: totalPage,
-		},
-	}, nil
-}
-
-func (r repository) GetAllDonatedItemsByStatusWithPagination(ctx context.Context, tx interface{}, status string, req pagination.Request) (pagination.ResponseWithData, error) {
-	validatedTransaction, err := validation.ValidateTransaction(tx)
-	if err != nil {
-		return pagination.ResponseWithData{}, err
-	}
-
-	db := validatedTransaction.DB()
-	if db == nil {
-		db = r.db.DB()
-	}
-
-	var donatedItemSchemas []DonatedItem
-	var count int64
-
-	req.Default()
-
-	query := db.WithContext(ctx).Model(&DonatedItem{}).
-		Where("status = ?", status)
-	if req.Search != "" {
-		query = query.Where("name ILIKE ? OR description ILIKE ? OR pick_city ILIKE ? OR pick_address ILIKE ?", "%"+req.Search+"%", "%"+req.Search+"%", "%"+req.Search+"%", "%"+req.Search+"%")
-	}
-
-	if err = query.Count(&count).Error; err != nil {
-		return pagination.ResponseWithData{}, err
-	}
-
-	if err = query.Scopes(pagination.Paginate(req)).Find(&donatedItemSchemas).Error; err != nil {
-		return pagination.ResponseWithData{}, err
-	}
-
-	totalPage := pagination.TotalPage(count, int64(req.PerPage))
-
-	donatedItemEntities := make([]any, len(donatedItemSchemas))
-	for i, donatedItemSchema := range donatedItemSchemas {
-		donatedItemEntities[i] = SchemaToEntity(donatedItemSchema)
-	}
-	return pagination.ResponseWithData{
-		Data: donatedItemEntities,
-		Response: pagination.Response{
-			Page:    req.Page,
-			PerPage: req.PerPage,
-			Count:   count,
-			MaxPage: totalPage,
-		},
-	}, nil
-}
-
-func (r repository) GetAllDonatedItemsBeforeDateWithPagination(ctx context.Context, tx interface{}, date string, req pagination.Request) (pagination.ResponseWithData, error) {
-	validatedTransaction, err := validation.ValidateTransaction(tx)
-	if err != nil {
-		return pagination.ResponseWithData{}, err
-	}
-
-	db := validatedTransaction.DB()
-	if db == nil {
-		db = r.db.DB()
-	}
-
-	var donatedItemSchemas []DonatedItem
-	var count int64
-
-	req.Default()
-
-	query := db.WithContext(ctx).Model(&DonatedItem{}).
-		Where("created_at < ?", date)
-	if req.Search != "" {
-		query = query.Where("name ILIKE ? OR description ILIKE ? OR pick_city ILIKE ? OR pick_address ILIKE ?", "%"+req.Search+"%", "%"+req.Search+"%", "%"+req.Search+"%", "%"+req.Search+"%")
+		query = query.Where("name ILIKE ? OR description ILIKE ? OR pick_address ILIKE ?", "%"+req.Search+"%", "%"+req.Search+"%", "%"+req.Search+"%")
 	}
 
 	if err = query.Count(&count).Error; err != nil {
@@ -271,6 +176,27 @@ func (r repository) GetDonatedItemByID(ctx context.Context, tx interface{}, id s
 	return donatedItemEntity, nil
 }
 
+func (r repository) CountDonatedItemsByCategoryID(ctx context.Context, tx interface{}, categoryID string) (int64, error) {
+	validatedTransaction, err := validation.ValidateTransaction(tx)
+	if err != nil {
+		return 0, err
+	}
+
+	db := validatedTransaction.DB()
+	if db == nil {
+		db = r.db.DB()
+	}
+
+	var count int64
+	if err = db.WithContext(ctx).Model(&DonatedItem{}).
+		Where("category_id = ?", categoryID).
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func (r repository) Create(ctx context.Context, tx interface{}, donatedItemEntity donated_item.DonatedItem) (donated_item.DonatedItem, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
@@ -309,21 +235,4 @@ func (r repository) Update(ctx context.Context, tx interface{}, donatedItemEntit
 
 	donatedItemEntity = SchemaToEntity(donatedItemSchema)
 	return donatedItemEntity, nil
-}
-
-func (r repository) Delete(ctx context.Context, tx interface{}, id string) error {
-	validatedTransaction, err := validation.ValidateTransaction(tx)
-	if err != nil {
-		return err
-	}
-
-	db := validatedTransaction.DB()
-	if db == nil {
-		db = r.db.DB()
-	}
-
-	if err = db.WithContext(ctx).Where("id = ?", id).Delete(&DonatedItem{}).Error; err != nil {
-		return err
-	}
-	return nil
 }

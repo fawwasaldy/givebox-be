@@ -55,7 +55,7 @@ func (r *repository) GetUserByID(ctx context.Context, tx interface{}, id string)
 	return userEntity, nil
 }
 
-func (r *repository) GetUserByUsername(ctx context.Context, tx interface{}, username string) (user.User, error) {
+func (r *repository) GetUserByEmail(ctx context.Context, tx interface{}, email string) (user.User, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return user.User{}, err
@@ -67,7 +67,7 @@ func (r *repository) GetUserByUsername(ctx context.Context, tx interface{}, user
 	}
 
 	var userSchema User
-	if err = db.WithContext(ctx).Where("username = ?", username).Take(&userSchema).Error; err != nil {
+	if err = db.WithContext(ctx).Where("email = ?", email).Take(&userSchema).Error; err != nil {
 		return user.User{}, err
 	}
 
@@ -75,7 +75,7 @@ func (r *repository) GetUserByUsername(ctx context.Context, tx interface{}, user
 	return userEntity, nil
 }
 
-func (r *repository) CheckUsername(ctx context.Context, tx interface{}, username string) (user.User, bool, error) {
+func (r *repository) CheckEmail(ctx context.Context, tx interface{}, email string) (user.User, bool, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return user.User{}, false, err
@@ -87,7 +87,7 @@ func (r *repository) CheckUsername(ctx context.Context, tx interface{}, username
 	}
 
 	var userSchema User
-	if err = db.WithContext(ctx).Where("username = ?", username).Take(&userSchema).Error; err != nil {
+	if err = db.WithContext(ctx).Where("email = ?", email).Take(&userSchema).Error; err != nil {
 		return user.User{}, false, err
 	}
 

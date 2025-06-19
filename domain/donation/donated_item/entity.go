@@ -6,14 +6,19 @@ import (
 )
 
 type DonatedItem struct {
-	ID          identity.ID
-	DonorID     identity.ID
-	RecipientID identity.ID
-	Status      Status
-	Name        string
-	Description string
-	Condition   shared.LikertScale
-	PickCity    string
-	PickAddress string
+	ID                  identity.ID
+	DonorID             identity.ID
+	CategoryID          identity.ID
+	Status              Status
+	Name                string
+	Description         string
+	Condition           shared.LikertScale
+	QuantityDescription string
+	PickCity            string
+	PickAddress         string
+	PickingStatus       PickingStatus
+	DeliveryTime        string
+	IsUrgent            bool
+	AdditionalNote      string
 	shared.Timestamp
 }

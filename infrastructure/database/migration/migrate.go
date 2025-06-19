@@ -5,9 +5,9 @@ import (
 	"givebox/infrastructure/database/chat/message"
 	"givebox/infrastructure/database/donation/category"
 	"givebox/infrastructure/database/donation/donated_item"
-	"givebox/infrastructure/database/donation/donated_item_category"
+	"givebox/infrastructure/database/donation/donated_item_recipient"
 	"givebox/infrastructure/database/donation/image"
-	"givebox/infrastructure/database/profile/profile_review"
+	"givebox/infrastructure/database/profile/review"
 	"givebox/infrastructure/database/profile/user"
 	"givebox/infrastructure/database/refresh_token"
 	"gorm.io/gorm"
@@ -20,9 +20,9 @@ func Migrate(db *gorm.DB) error {
 
 		&donated_item.DonatedItem{},
 		&category.Category{},
-		&donated_item_category.DonatedItemCategory{},
+		&donated_item_recipient.DonatedItemRecipient{},
 		&image.Image{},
-		&profile_review.ProfileReview{},
+		&review.Review{},
 		&conversation.Conversation{},
 		&message.Message{},
 	); err != nil {

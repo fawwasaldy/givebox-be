@@ -6,16 +6,10 @@ import (
 )
 
 type Repository interface {
-	GetAllConversationsByDonorIDWithPagination(
+	GetAllConversationsByUserIDWithPagination(
 		ctx context.Context,
 		tx interface{},
-		donorID string,
-		req pagination.Request,
-	) (pagination.ResponseWithData, error)
-	GetAllConversationsByRecipientIDWithPagination(
-		ctx context.Context,
-		tx interface{},
-		recipientID string,
+		userID string,
 		req pagination.Request,
 	) (pagination.ResponseWithData, error)
 	Create(ctx context.Context, tx interface{}, conversationEntity Conversation) (Conversation, error)

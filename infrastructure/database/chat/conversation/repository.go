@@ -18,7 +18,7 @@ func NewRepository(db *transaction.Repository) conversation.Repository {
 	}
 }
 
-func (r repository) GetAllConversationsByDonorIDWithPagination(ctx context.Context, tx interface{}, donorID string, req pagination.Request) (pagination.ResponseWithData, error) {
+func (r repository) GetAllConversationsByUserIDWithPagination(ctx context.Context, tx interface{}, userID string, req pagination.Request) (pagination.ResponseWithData, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return pagination.ResponseWithData{}, err
@@ -35,59 +35,12 @@ func (r repository) GetAllConversationsByDonorIDWithPagination(ctx context.Conte
 	req.Default()
 
 	query := db.WithContext(ctx).Model(&Conversation{}).
-		Joins("JOIN users ON users.id = conversations.recipient_id AND conversations.donor_id = ?", donorID).
+		Joins("JOIN donated_item_recipients ON donated_item_recipients.id = conversations.donated_item_recipient_id").
+		Joins("JOIN donated_items ON donated_items.id = donated_item_recipients.donated_item_id").
+		Where("donated_item_recipients.recipient_id = ? OR donated_items.donor_id = ?", userID, userID).
 		Joins("JOIN messages ON messages.id = conversations.last_message_id")
 	if req.Search != "" {
-		query = query.Where("users.full_name ILIKE ?", "%"+req.Search+"%")
-	}
-	query = query.Order("messages.created_at DESC")
-
-	if err = query.Count(&count).Error; err != nil {
-		return pagination.ResponseWithData{}, err
-	}
-
-	if err = query.Scopes(pagination.Paginate(req)).Find(&conversationSchemas).Error; err != nil {
-		return pagination.ResponseWithData{}, err
-	}
-
-	totalPage := pagination.TotalPage(count, int64(req.PerPage))
-
-	conversationEntities := make([]any, len(conversationSchemas))
-	for i, conversationSchema := range conversationSchemas {
-		conversationEntities[i] = SchemaToEntity(conversationSchema)
-	}
-	return pagination.ResponseWithData{
-		Data: conversationEntities,
-		Response: pagination.Response{
-			Page:    req.Page,
-			PerPage: req.PerPage,
-			Count:   count,
-			MaxPage: totalPage,
-		},
-	}, nil
-}
-
-func (r repository) GetAllConversationsByRecipientIDWithPagination(ctx context.Context, tx interface{}, recipientID string, req pagination.Request) (pagination.ResponseWithData, error) {
-	validatedTransaction, err := validation.ValidateTransaction(tx)
-	if err != nil {
-		return pagination.ResponseWithData{}, err
-	}
-
-	db := validatedTransaction.DB()
-	if db == nil {
-		db = r.db.DB()
-	}
-
-	var conversationSchemas []Conversation
-	var count int64
-
-	req.Default()
-
-	query := db.WithContext(ctx).Model(&Conversation{}).
-		Joins("JOIN users ON users.id = conversations.donor_id AND conversations.recipient_id = ?", recipientID).
-		Joins("JOIN messages ON messages.id = conversations.last_message_id")
-	if req.Search != "" {
-		query = query.Where("users.full_name ILIKE ?", "%"+req.Search+"%")
+		query = query.Where("id ILIKE ?", "%"+req.Search+"%")
 	}
 	query = query.Order("messages.created_at DESC")
 

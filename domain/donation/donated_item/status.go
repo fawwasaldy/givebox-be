@@ -3,20 +3,16 @@ package donated_item
 import "fmt"
 
 const (
-	StatusOpened    = "opened"
-	StatusRequested = "requested"
-	StatusAccepted  = "accepted"
-	StatusRejected  = "rejected"
-	StatusTaken     = "taken"
+	StatusOpened   = "opened"
+	StatusAccepted = "accepted"
+	StatusRejected = "rejected"
 )
 
 var (
 	Statuses = []Status{
 		{Status: StatusOpened},
-		{Status: StatusRequested},
 		{Status: StatusAccepted},
 		{Status: StatusRejected},
-		{Status: StatusTaken},
 	}
 )
 

@@ -7,7 +7,7 @@ import (
 	response_donation "givebox/application/response/donation"
 	"givebox/domain/donation/category"
 	"givebox/domain/donation/donated_item"
-	"givebox/domain/donation/donated_item_category"
+	"givebox/domain/donation/donated_item_recipient"
 	"givebox/domain/donation/image"
 	"givebox/domain/identity"
 	"givebox/domain/shared"
@@ -36,7 +36,7 @@ type (
 
 	donationService struct {
 		donatedItemRepository         donated_item.Repository
-		donatedItemCategoryRepository donated_item_category.Repository
+		donatedItemCategoryRepository donated_item_recipient.Repository
 		imageRepository               image.Repository
 		categoryRepository            category.Repository
 		transaction                   interface{}
@@ -45,7 +45,7 @@ type (
 
 func NewDonationService(
 	donatedItemRepository donated_item.Repository,
-	donatedItemCategoryRepository donated_item_category.Repository,
+	donatedItemCategoryRepository donated_item_recipient.Repository,
 	imageRepository image.Repository,
 	categoryRepository category.Repository,
 	transaction interface{},
@@ -267,7 +267,7 @@ func (s *donationService) OpenDonatedItem(ctx context.Context, donorID string, r
 	}
 
 	for _, reqCategory := range req.Categories {
-		donatedItemCategoryEntity := donated_item_category.DonatedItemCategory{
+		donatedItemCategoryEntity := donated_item_recipient.DonatedItemCategory{
 			DonatedItemID: createdDonatedItem.ID,
 			CategoryID:    identity.NewID(reqCategory),
 		}

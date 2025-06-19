@@ -18,27 +18,15 @@ type (
 			categoryID string,
 			req pagination.Request,
 		) (pagination.ResponseWithData, error)
-		GetAllDonatedItemsByConditionWithPagination(
+		GetAllDonatedItemsByCityWithPagination(
 			ctx context.Context,
 			tx interface{},
-			condition int,
-			req pagination.Request,
-		) (pagination.ResponseWithData, error)
-		GetAllDonatedItemsByStatusWithPagination(
-			ctx context.Context,
-			tx interface{},
-			status string,
-			req pagination.Request,
-		) (pagination.ResponseWithData, error)
-		GetAllDonatedItemsBeforeDateWithPagination(
-			ctx context.Context,
-			tx interface{},
-			date string,
+			city string,
 			req pagination.Request,
 		) (pagination.ResponseWithData, error)
 		GetDonatedItemByID(ctx context.Context, tx interface{}, id string) (DonatedItem, error)
+		CountDonatedItemsByCategoryID(ctx context.Context, tx interface{}, categoryID string) (int64, error)
 		Create(ctx context.Context, tx interface{}, donatedItemEntity DonatedItem) (DonatedItem, error)
 		Update(ctx context.Context, tx interface{}, donatedItemEntity DonatedItem) (DonatedItem, error)
-		Delete(ctx context.Context, tx interface{}, id string) error
 	}
 )
