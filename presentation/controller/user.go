@@ -15,7 +15,9 @@ type (
 		Register(ctx *gin.Context)
 		Login(ctx *gin.Context)
 		Me(ctx *gin.Context)
+		ChangePassword(ctx *gin.Context)
 		RefreshToken(ctx *gin.Context)
+		Logout(ctx *gin.Context)
 		Update(ctx *gin.Context)
 		Delete(ctx *gin.Context)
 	}
@@ -83,6 +85,27 @@ func (c *userController) Me(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+func (c *userController) ChangePassword(ctx *gin.Context) {
+	var req request_profile.UserChangePassword
+	if err := ctx.ShouldBind(&req); err != nil {
+		res := presentation.BuildResponseFailed(message.FailedGetDataFromBody, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	userID := ctx.MustGet("user_id").(string)
+
+	result, err := c.userService.ChangePassword(ctx.Request.Context(), userID, req)
+	if err != nil {
+		res := presentation.BuildResponseFailed(message.FailedChangePassword, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := presentation.BuildResponseSuccess(message.SuccessChangePassword, result)
+	ctx.JSON(http.StatusOK, res)
+}
+
 func (c *userController) RefreshToken(ctx *gin.Context) {
 	var req request.RefreshToken
 	if err := ctx.ShouldBind(&req); err != nil {
@@ -99,6 +122,19 @@ func (c *userController) RefreshToken(ctx *gin.Context) {
 	}
 
 	res := presentation.BuildResponseSuccess(message.SuccessRefreshToken, result)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *userController) Logout(ctx *gin.Context) {
+	userID := ctx.MustGet("user_id").(string)
+
+	if err := c.userService.RevokeRefreshToken(ctx.Request.Context(), userID); err != nil {
+		res := presentation.BuildResponseFailed(message.FailedLogout, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := presentation.BuildResponseSuccess(message.SuccessLogout, nil)
 	ctx.JSON(http.StatusOK, res)
 }
 
