@@ -125,9 +125,12 @@ func (s *userService) Update(ctx context.Context, userID string, req request_pro
 		return response_profile.UserUpdate{}, user.ErrorUserNotFound
 	}
 
-	name, err := user.NewName(req.FirstName, req.LastName)
-	if err != nil {
-		return response_profile.UserUpdate{}, err
+	var name user.Name
+	if req.FirstName != "" && req.LastName != "" {
+		name, err = user.NewName(req.FirstName, req.LastName)
+		if err != nil {
+			return response_profile.UserUpdate{}, err
+		}
 	}
 
 	userEntity := user.User{
