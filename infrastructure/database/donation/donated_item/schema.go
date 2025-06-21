@@ -21,7 +21,7 @@ type DonatedItem struct {
 	PickAddress         string    `gorm:"type:varchar(255);not null;column:pick_address"`
 	PickingStatus       string    `gorm:"type:varchar(20);not null;column:picking_status"`
 	DeliveryTime        string    `gorm:"type:varchar(50);column:delivery_time"`
-	IsUrgent            bool      `gorm:"type:boolean;not null;default:false;column:is_urgent"`
+	IsUrgent            bool      `gorm:"type:boolean;default:false;not null;column:is_urgent"`
 	AdditionalNote      string    `gorm:"type:text;column:additional_note"`
 	CreatedAt           time.Time `gorm:"type:timestamp with time zone;column:created_at"`
 	UpdatedAt           time.Time `gorm:"type:timestamp with time zone;column:updated_at"`

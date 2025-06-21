@@ -9,5 +9,6 @@ type DonatedItemRecipient struct {
 	ID            identity.ID
 	DonatedItemID identity.ID
 	RecipientID   identity.ID
+	IsAccepted    bool
 	shared.Timestamp
 }

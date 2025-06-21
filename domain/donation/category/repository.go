@@ -14,5 +14,6 @@ type (
 			ctx context.Context,
 			tx interface{},
 		) ([]Category, error)
+		GetCategoryByID(ctx context.Context, tx interface{}, id string) (Category, error)
 	}
 )
