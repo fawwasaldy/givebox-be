@@ -32,7 +32,8 @@ func (r repository) GetAllDonatedItemsWithPagination(ctx context.Context, tx int
 
 	req.Default()
 
-	query := db.WithContext(ctx).Model(&DonatedItem{})
+	query := db.WithContext(ctx).Model(&DonatedItem{}).
+		Where("status = ?", donated_item.StatusOpened)
 	if req.Search != "" {
 		query = query.Where("name ILIKE ? OR description ILIKE ? OR pick_city ILIKE ? OR pick_address ILIKE ?", "%"+req.Search+"%", "%"+req.Search+"%", "%"+req.Search+"%", "%"+req.Search+"%")
 	}
@@ -79,8 +80,8 @@ func (r repository) GetAllDonatedItemsByCategoryIDWithPagination(ctx context.Con
 	req.Default()
 
 	query := db.WithContext(ctx).Model(&DonatedItem{}).
-		Joins("JOIN donated_items_categories ON donated_items.id = donated_items_categories.donated_item_id").
-		Where("donated_items_categories.category_id = ?", categoryID)
+		Where("status = ?", donated_item.StatusOpened).
+		Where("category_id = ?", categoryID)
 	if req.Search != "" {
 		query = query.Where("name ILIKE ? OR description ILIKE ? OR pick_city ILIKE ? OR pick_address ILIKE ?", "%"+req.Search+"%", "%"+req.Search+"%", "%"+req.Search+"%", "%"+req.Search+"%")
 	}
@@ -126,7 +127,9 @@ func (r repository) GetAllDonatedItemsByCityWithPagination(ctx context.Context, 
 
 	req.Default()
 
-	query := db.WithContext(ctx).Model(&DonatedItem{}).Where("pick_city ILIKE ?", "%"+city+"%")
+	query := db.WithContext(ctx).Model(&DonatedItem{}).
+		Where("status = ?", donated_item.StatusOpened).
+		Where("pick_city ILIKE ?", "%"+city+"%")
 	if req.Search != "" {
 		query = query.Where("name ILIKE ? OR description ILIKE ? OR pick_address ILIKE ?", "%"+req.Search+"%", "%"+req.Search+"%", "%"+req.Search+"%")
 	}
