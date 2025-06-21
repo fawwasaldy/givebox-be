@@ -71,3 +71,24 @@ func (r repository) GetSixCategoriesByMostOpenedDonatedItems(ctx context.Context
 	}
 	return categoryEntities, nil
 }
+
+func (r repository) GetCategoryByID(ctx context.Context, tx interface{}, id string) (category.Category, error) {
+	validatedTransaction, err := validation.ValidateTransaction(tx)
+	if err != nil {
+		return category.Category{}, err
+	}
+
+	db := validatedTransaction.DB()
+	if db == nil {
+		db = r.db.DB()
+	}
+
+	var categorySchema Category
+
+	if err = db.WithContext(ctx).Where("id = ?", id).Take(&categorySchema).Error; err != nil {
+		return category.Category{}, err
+	}
+
+	categoryEntity := SchemaToEntity(categorySchema)
+	return categoryEntity, nil
+}

@@ -9,6 +9,7 @@ import (
 type DonatedItemRecipient struct {
 	DonatedItemID uuid.UUID `gorm:"type:uuid;not null;column:donated_item_id"`
 	RecipientID   uuid.UUID `gorm:"type:uuid;not null;column:recipient_id"`
+	IsAccepted    bool      `gorm:"type:boolean;default:false;not null;column:is_accepted"`
 }
 
 type Tabler interface {
@@ -23,6 +24,7 @@ func EntityToSchema(entity donated_item_recipient.DonatedItemRecipient) DonatedI
 	return DonatedItemRecipient{
 		DonatedItemID: entity.DonatedItemID.ID,
 		RecipientID:   entity.RecipientID.ID,
+		IsAccepted:    entity.IsAccepted,
 	}
 }
 
@@ -30,5 +32,6 @@ func SchemaToEntity(schema DonatedItemRecipient) donated_item_recipient.DonatedI
 	return donated_item_recipient.DonatedItemRecipient{
 		DonatedItemID: identity.NewIDFromSchema(schema.DonatedItemID),
 		RecipientID:   identity.NewIDFromSchema(schema.RecipientID),
+		IsAccepted:    schema.IsAccepted,
 	}
 }

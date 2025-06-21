@@ -36,3 +36,23 @@ func (r repository) Create(ctx context.Context, tx interface{}, donatedItemCateg
 	donatedItemCategoryEntity = SchemaToEntity(donatedItemCategorySchema)
 	return donatedItemCategoryEntity, nil
 }
+
+func (r repository) Update(ctx context.Context, tx interface{}, donatedItemCategoryEntity donated_item_recipient.DonatedItemRecipient) (donated_item_recipient.DonatedItemRecipient, error) {
+	validatedTransaction, err := validation.ValidateTransaction(tx)
+	if err != nil {
+		return donated_item_recipient.DonatedItemRecipient{}, err
+	}
+
+	db := validatedTransaction.DB()
+	if db == nil {
+		db = r.db.DB()
+	}
+
+	donatedItemCategorySchema := EntityToSchema(donatedItemCategoryEntity)
+	if err = db.WithContext(ctx).Updates(&donatedItemCategorySchema).Error; err != nil {
+		return donated_item_recipient.DonatedItemRecipient{}, err
+	}
+
+	donatedItemCategoryEntity = SchemaToEntity(donatedItemCategorySchema)
+	return donatedItemCategoryEntity, nil
+}
