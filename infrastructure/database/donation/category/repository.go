@@ -15,7 +15,7 @@ func NewRepository(db *transaction.Repository) category.Repository {
 	return &repository{db: db}
 }
 
-func (r repository) GetAllCategories(ctx context.Context, tx interface{}) ([]category.Category, error) {
+func (r *repository) GetAllCategories(ctx context.Context, tx interface{}) ([]category.Category, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return nil, err
@@ -41,7 +41,7 @@ func (r repository) GetAllCategories(ctx context.Context, tx interface{}) ([]cat
 	return categoryEntities, nil
 }
 
-func (r repository) GetSixCategoriesByMostOpenedDonatedItems(ctx context.Context, tx interface{}) ([]category.Category, error) {
+func (r *repository) GetSixCategoriesByMostOpenedDonatedItems(ctx context.Context, tx interface{}) ([]category.Category, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func (r repository) GetSixCategoriesByMostOpenedDonatedItems(ctx context.Context
 	return categoryEntities, nil
 }
 
-func (r repository) GetCategoryByID(ctx context.Context, tx interface{}, id string) (category.Category, error) {
+func (r *repository) GetCategoryByID(ctx context.Context, tx interface{}, id string) (category.Category, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return category.Category{}, err

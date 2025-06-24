@@ -18,7 +18,7 @@ func NewRepository(db *transaction.Repository) conversation.Repository {
 	}
 }
 
-func (r repository) GetAllConversationsByUserIDWithPagination(ctx context.Context, tx interface{}, userID string, req pagination.Request) (pagination.ResponseWithData, error) {
+func (r *repository) GetAllConversationsByUserIDWithPagination(ctx context.Context, tx interface{}, userID string, req pagination.Request) (pagination.ResponseWithData, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return pagination.ResponseWithData{}, err
@@ -38,7 +38,7 @@ func (r repository) GetAllConversationsByUserIDWithPagination(ctx context.Contex
 		Joins("JOIN donated_item_recipients ON donated_item_recipients.id = conversations.donated_item_recipient_id").
 		Joins("JOIN donated_items ON donated_items.id = donated_item_recipients.donated_item_id").
 		Where("donated_item_recipients.recipient_id = ? OR donated_items.donor_id = ?", userID, userID).
-		Joins("JOIN messages ON messages.id = conversations.last_message_id")
+		Joins("JOIN messages ON conversations.latest_message_id = messages.id")
 	if req.Search != "" {
 		query = query.Where("id ILIKE ?", "%"+req.Search+"%")
 	}
@@ -69,7 +69,27 @@ func (r repository) GetAllConversationsByUserIDWithPagination(ctx context.Contex
 	}, nil
 }
 
-func (r repository) Create(ctx context.Context, tx interface{}, conversationEntity conversation.Conversation) (conversation.Conversation, error) {
+func (r *repository) GetConversationByID(ctx context.Context, tx interface{}, conversationID string) (conversation.Conversation, error) {
+	validatedTransaction, err := validation.ValidateTransaction(tx)
+	if err != nil {
+		return conversation.Conversation{}, err
+	}
+
+	db := validatedTransaction.DB()
+	if db == nil {
+		db = r.db.DB()
+	}
+
+	var conversationSchema Conversation
+	if err = db.WithContext(ctx).Where("id = ?", conversationID).Take(&conversationSchema).Error; err != nil {
+		return conversation.Conversation{}, err
+	}
+
+	conversationEntity := SchemaToEntity(conversationSchema)
+	return conversationEntity, nil
+}
+
+func (r *repository) Create(ctx context.Context, tx interface{}, conversationEntity conversation.Conversation) (conversation.Conversation, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return conversation.Conversation{}, err
@@ -82,6 +102,26 @@ func (r repository) Create(ctx context.Context, tx interface{}, conversationEnti
 
 	conversationSchema := EntityToSchema(conversationEntity)
 	if err = db.WithContext(ctx).Create(&conversationSchema).Error; err != nil {
+		return conversation.Conversation{}, err
+	}
+
+	conversationEntity = SchemaToEntity(conversationSchema)
+	return conversationEntity, nil
+}
+
+func (r *repository) Update(ctx context.Context, tx interface{}, conversationEntity conversation.Conversation) (conversation.Conversation, error) {
+	validatedTransaction, err := validation.ValidateTransaction(tx)
+	if err != nil {
+		return conversation.Conversation{}, err
+	}
+
+	db := validatedTransaction.DB()
+	if db == nil {
+		db = r.db.DB()
+	}
+
+	conversationSchema := EntityToSchema(conversationEntity)
+	if err = db.WithContext(ctx).Updates(&conversationSchema).Error; err != nil {
 		return conversation.Conversation{}, err
 	}
 

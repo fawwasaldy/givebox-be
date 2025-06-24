@@ -16,7 +16,7 @@ func NewRepository(db *transaction.Repository) message.Repository {
 	return &repository{db: db}
 }
 
-func (r repository) GetAllMessagesByConversationIDWithPagination(ctx context.Context, tx interface{}, conversationID string, req pagination.Request) (pagination.ResponseWithData, error) {
+func (r *repository) GetAllMessagesByConversationIDWithPagination(ctx context.Context, tx interface{}, conversationID string, req pagination.Request) (pagination.ResponseWithData, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return pagination.ResponseWithData{}, err
@@ -63,7 +63,27 @@ func (r repository) GetAllMessagesByConversationIDWithPagination(ctx context.Con
 	}, nil
 }
 
-func (r repository) Create(ctx context.Context, tx interface{}, messageEntity message.Message) (message.Message, error) {
+func (r *repository) GetMessageByID(ctx context.Context, tx interface{}, id string) (message.Message, error) {
+	validatedTransaction, err := validation.ValidateTransaction(tx)
+	if err != nil {
+		return message.Message{}, err
+	}
+
+	db := validatedTransaction.DB()
+	if db == nil {
+		db = r.db.DB()
+	}
+
+	var messageSchema Message
+	if err = db.WithContext(ctx).Where("id = ?", id).Take(&messageSchema).Error; err != nil {
+		return message.Message{}, err
+	}
+
+	messageEntity := SchemaToEntity(messageSchema)
+	return messageEntity, nil
+}
+
+func (r *repository) Create(ctx context.Context, tx interface{}, messageEntity message.Message) (message.Message, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return message.Message{}, err

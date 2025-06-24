@@ -16,7 +16,7 @@ func NewRepository(db *transaction.Repository) review.Repository {
 	return &repository{db: db}
 }
 
-func (r repository) GetAllReviewsByDonorIDWithPagination(ctx context.Context, tx interface{}, donorID string, req pagination.Request) (pagination.ResponseWithData, error) {
+func (r *repository) GetAllReviewsByDonorIDWithPagination(ctx context.Context, tx interface{}, donorID string, req pagination.Request) (pagination.ResponseWithData, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return pagination.ResponseWithData{}, err
@@ -65,7 +65,7 @@ func (r repository) GetAllReviewsByDonorIDWithPagination(ctx context.Context, tx
 	}, nil
 }
 
-func (r repository) GetAllReviewsByRecipientIDWithPagination(ctx context.Context, tx interface{}, recipientID string, req pagination.Request) (pagination.ResponseWithData, error) {
+func (r *repository) GetAllReviewsByRecipientIDWithPagination(ctx context.Context, tx interface{}, recipientID string, req pagination.Request) (pagination.ResponseWithData, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return pagination.ResponseWithData{}, err
@@ -115,7 +115,7 @@ func (r repository) GetAllReviewsByRecipientIDWithPagination(ctx context.Context
 	}, nil
 }
 
-func (r repository) Create(ctx context.Context, tx interface{}, reviewEntity review.Review) (review.Review, error) {
+func (r *repository) Create(ctx context.Context, tx interface{}, reviewEntity review.Review) (review.Review, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return review.Review{}, err
