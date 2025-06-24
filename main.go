@@ -4,7 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"givebox/application/service"
 	"givebox/command"
-	"givebox/infrastructure/database/config"
+	infrastructure_conversation "givebox/infrastructure/database/chat/conversation"
+	infrastructure_message "givebox/infrastructure/database/chat/message"
+	infrastructure_config "givebox/infrastructure/database/config"
 	infrastructure_category "givebox/infrastructure/database/donation/category"
 	infrastructure_donated_item "givebox/infrastructure/database/donation/donated_item"
 	infrastructure_donated_item_recipient "givebox/infrastructure/database/donation/donated_item_recipient"
@@ -54,7 +56,7 @@ func run(server *gin.Engine) {
 }
 
 func main() {
-	db := config.SetUpDatabaseConnection()
+	db := infrastructure_config.SetUpDatabaseConnection()
 
 	jwtService := service.NewJWTService()
 
@@ -66,6 +68,8 @@ func main() {
 	donatedItemRecipientRepository := infrastructure_donated_item_recipient.NewRepository(transactionRepository)
 	imageRepository := infrastructure_image.NewRepository(transactionRepository)
 	categoryRepository := infrastructure_category.NewRepository(transactionRepository)
+	conversationRepository := infrastructure_conversation.NewRepository(transactionRepository)
+	messageRepository := infrastructure_message.NewRepository(transactionRepository)
 
 	// services
 	userService := service.NewUserService(
@@ -80,12 +84,20 @@ func main() {
 		categoryRepository,
 		userRepository,
 		transactionRepository)
+	chatService := service.NewChatService(
+		conversationRepository,
+		messageRepository,
+		donatedItemRecipientRepository,
+		donatedItemRepository,
+		userRepository,
+		transactionRepository)
 
 	// controllers
 	userController := controller.NewUserController(userService)
 	donationController := controller.NewDonationController(donationService)
+	chatController := controller.NewChatController(chatService)
 
-	defer config.CloseDatabaseConnection(db)
+	defer infrastructure_config.CloseDatabaseConnection(db)
 
 	if !args(db) {
 		return
@@ -97,6 +109,7 @@ func main() {
 	// routes
 	route.UserRoute(server, userController, jwtService)
 	route.DonationRoute(server, donationController, jwtService)
+	route.ChatRoute(server, chatController, jwtService)
 
 	run(server)
 }

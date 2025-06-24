@@ -15,7 +15,7 @@ func NewRepository(db *transaction.Repository) image.Repository {
 	return &repository{db: db}
 }
 
-func (r repository) GetAllImagesByDonatedItemID(ctx context.Context, tx interface{}, donatedItemID string) ([]image.Image, error) {
+func (r *repository) GetAllImagesByDonatedItemID(ctx context.Context, tx interface{}, donatedItemID string) ([]image.Image, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func (r repository) GetAllImagesByDonatedItemID(ctx context.Context, tx interfac
 	return imageEntities, nil
 }
 
-func (r repository) Create(ctx context.Context, tx interface{}, imageEntity image.Image) (image.Image, error) {
+func (r *repository) Create(ctx context.Context, tx interface{}, imageEntity image.Image) (image.Image, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return image.Image{}, err
@@ -62,7 +62,7 @@ func (r repository) Create(ctx context.Context, tx interface{}, imageEntity imag
 	return imageEntity, nil
 }
 
-func (r repository) Delete(ctx context.Context, tx interface{}, id string) error {
+func (r *repository) Delete(ctx context.Context, tx interface{}, id string) error {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return err

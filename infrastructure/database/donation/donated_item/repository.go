@@ -16,7 +16,7 @@ func NewRepository(db *transaction.Repository) donated_item.Repository {
 	return &repository{db: db}
 }
 
-func (r repository) GetAllDonatedItemsWithPagination(ctx context.Context, tx interface{}, req pagination.Request) (pagination.ResponseWithData, error) {
+func (r *repository) GetAllDonatedItemsWithPagination(ctx context.Context, tx interface{}, req pagination.Request) (pagination.ResponseWithData, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return pagination.ResponseWithData{}, err
@@ -63,7 +63,7 @@ func (r repository) GetAllDonatedItemsWithPagination(ctx context.Context, tx int
 	}, nil
 }
 
-func (r repository) GetAllDonatedItemsByCategoryIDWithPagination(ctx context.Context, tx interface{}, categoryID string, req pagination.Request) (pagination.ResponseWithData, error) {
+func (r *repository) GetAllDonatedItemsByCategoryIDWithPagination(ctx context.Context, tx interface{}, categoryID string, req pagination.Request) (pagination.ResponseWithData, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return pagination.ResponseWithData{}, err
@@ -111,7 +111,7 @@ func (r repository) GetAllDonatedItemsByCategoryIDWithPagination(ctx context.Con
 	}, nil
 }
 
-func (r repository) GetAllDonatedItemsByCityWithPagination(ctx context.Context, tx interface{}, city string, req pagination.Request) (pagination.ResponseWithData, error) {
+func (r *repository) GetAllDonatedItemsByCityWithPagination(ctx context.Context, tx interface{}, city string, req pagination.Request) (pagination.ResponseWithData, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return pagination.ResponseWithData{}, err
@@ -159,7 +159,7 @@ func (r repository) GetAllDonatedItemsByCityWithPagination(ctx context.Context, 
 	}, nil
 }
 
-func (r repository) GetDonatedItemByID(ctx context.Context, tx interface{}, id string) (donated_item.DonatedItem, error) {
+func (r *repository) GetDonatedItemByID(ctx context.Context, tx interface{}, id string) (donated_item.DonatedItem, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return donated_item.DonatedItem{}, err
@@ -179,7 +179,7 @@ func (r repository) GetDonatedItemByID(ctx context.Context, tx interface{}, id s
 	return donatedItemEntity, nil
 }
 
-func (r repository) CountDonatedItemsByCategoryID(ctx context.Context, tx interface{}, categoryID string) (int64, error) {
+func (r *repository) CountDonatedItemsByCategoryID(ctx context.Context, tx interface{}, categoryID string) (int64, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return 0, err
@@ -200,7 +200,7 @@ func (r repository) CountDonatedItemsByCategoryID(ctx context.Context, tx interf
 	return count, nil
 }
 
-func (r repository) Create(ctx context.Context, tx interface{}, donatedItemEntity donated_item.DonatedItem) (donated_item.DonatedItem, error) {
+func (r *repository) Create(ctx context.Context, tx interface{}, donatedItemEntity donated_item.DonatedItem) (donated_item.DonatedItem, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return donated_item.DonatedItem{}, err
@@ -220,7 +220,7 @@ func (r repository) Create(ctx context.Context, tx interface{}, donatedItemEntit
 	return donatedItemEntity, nil
 }
 
-func (r repository) Update(ctx context.Context, tx interface{}, donatedItemEntity donated_item.DonatedItem) (donated_item.DonatedItem, error) {
+func (r *repository) Update(ctx context.Context, tx interface{}, donatedItemEntity donated_item.DonatedItem) (donated_item.DonatedItem, error) {
 	validatedTransaction, err := validation.ValidateTransaction(tx)
 	if err != nil {
 		return donated_item.DonatedItem{}, err
