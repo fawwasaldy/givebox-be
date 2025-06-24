@@ -21,9 +21,9 @@ type (
 		GetAllDonatedItemsWithPagination(ctx context.Context, req pagination.Request) (pagination.ResponseWithData, error)
 		GetAllDonatedItemsByCategoryIDWithPagination(ctx context.Context, categoryID string, req pagination.Request) (pagination.ResponseWithData, error)
 		GetAllDonatedItemsByCityWithPagination(ctx context.Context, city string, req pagination.Request) (pagination.ResponseWithData, error)
-		GetDonatedItemByID(ctx context.Context, id string) (response_donation.DetailedDonationItem, error)
-		OpenDonatedItem(ctx context.Context, donorID string, req request_donation.DonationItemOpen) (response_donation.DonationItemOpen, error)
-		AcceptDonatedItem(ctx context.Context, req request_donation.DonationItemAccept) (response_donation.DonationItemAccept, error)
+		GetDonatedItemByID(ctx context.Context, id string) (response_donation.DetailedDonatedItem, error)
+		OpenDonatedItem(ctx context.Context, donorID string, req request_donation.DonatedItemOpen) (response_donation.DonatedItemOpen, error)
+		AcceptDonatedItem(ctx context.Context, req request_donation.DonatedItemAccept) (response_donation.DonatedItemAccept, error)
 		GetAllImagesByDonatedItemID(ctx context.Context, donatedItemID string) ([]response_donation.Image, error)
 		GetAllCategories(ctx context.Context) ([]response_donation.Category, error)
 	}
@@ -80,7 +80,7 @@ func (s *donationService) GetAllDonatedItemsWithPagination(ctx context.Context, 
 			return pagination.ResponseWithData{}, category.ErrorGetCategoryById
 		}
 
-		data = append(data, response_donation.DonationItem{
+		data = append(data, response_donation.DonatedItem{
 			ID:          donatedItemEntity.ID.String(),
 			DonorName:   retrievedDonor.Name.FullName(),
 			Name:        donatedItemEntity.Name,
@@ -125,7 +125,7 @@ func (s *donationService) GetAllDonatedItemsByCategoryIDWithPagination(ctx conte
 			return pagination.ResponseWithData{}, category.ErrorGetCategoryById
 		}
 
-		data = append(data, response_donation.DonationItem{
+		data = append(data, response_donation.DonatedItem{
 			ID:          donatedItemEntity.ID.String(),
 			DonorName:   retrievedDonor.Name.FullName(),
 			Name:        donatedItemEntity.Name,
@@ -170,7 +170,7 @@ func (s *donationService) GetAllDonatedItemsByCityWithPagination(ctx context.Con
 			return pagination.ResponseWithData{}, category.ErrorGetCategoryById
 		}
 
-		data = append(data, response_donation.DonationItem{
+		data = append(data, response_donation.DonatedItem{
 			ID:          donatedItemEntity.ID.String(),
 			DonorName:   retrievedDonor.Name.FullName(),
 			Name:        donatedItemEntity.Name,
@@ -191,22 +191,22 @@ func (s *donationService) GetAllDonatedItemsByCityWithPagination(ctx context.Con
 	return retrievedData, nil
 }
 
-func (s *donationService) GetDonatedItemByID(ctx context.Context, id string) (response_donation.DetailedDonationItem, error) {
+func (s *donationService) GetDonatedItemByID(ctx context.Context, id string) (response_donation.DetailedDonatedItem, error) {
 	retrievedDonatedItem, err := s.donatedItemRepository.GetDonatedItemByID(ctx, nil, id)
 	if err != nil {
-		return response_donation.DetailedDonationItem{}, donated_item.ErrorGetDonatedItemById
+		return response_donation.DetailedDonatedItem{}, donated_item.ErrorGetDonatedItemById
 	}
 
 	retrievedDonor, err := s.userRepository.GetUserByID(ctx, nil, retrievedDonatedItem.DonorID.String())
 	if err != nil {
-		return response_donation.DetailedDonationItem{}, user.ErrorGetUserById
+		return response_donation.DetailedDonatedItem{}, user.ErrorGetUserById
 	}
 	retrievedCategory, err := s.categoryRepository.GetCategoryByID(ctx, nil, retrievedDonatedItem.CategoryID.String())
 	if err != nil {
-		return response_donation.DetailedDonationItem{}, category.ErrorGetCategoryById
+		return response_donation.DetailedDonatedItem{}, category.ErrorGetCategoryById
 	}
 
-	return response_donation.DetailedDonationItem{
+	return response_donation.DetailedDonatedItem{
 		ID:                  retrievedDonatedItem.ID.String(),
 		DonorName:           retrievedDonor.Name.FullName(),
 		Name:                retrievedDonatedItem.Name,
@@ -223,15 +223,15 @@ func (s *donationService) GetDonatedItemByID(ctx context.Context, id string) (re
 	}, nil
 }
 
-func (s *donationService) OpenDonatedItem(ctx context.Context, donorID string, req request_donation.DonationItemOpen) (response_donation.DonationItemOpen, error) {
+func (s *donationService) OpenDonatedItem(ctx context.Context, donorID string, req request_donation.DonatedItemOpen) (response_donation.DonatedItemOpen, error) {
 	validatedTransaction, err := validation.ValidateTransaction(s.transaction)
 	if err != nil {
-		return response_donation.DonationItemOpen{}, err
+		return response_donation.DonatedItemOpen{}, err
 	}
 
 	tx, err := validatedTransaction.Begin(ctx)
 	if err != nil {
-		return response_donation.DonationItemOpen{}, err
+		return response_donation.DonatedItemOpen{}, err
 	}
 
 	defer func() {
@@ -243,15 +243,15 @@ func (s *donationService) OpenDonatedItem(ctx context.Context, donorID string, r
 
 	condition, err := shared.NewLikertScale(req.Condition)
 	if err != nil {
-		return response_donation.DonationItemOpen{}, donated_item.ErrorOpenDonatedItem
+		return response_donation.DonatedItemOpen{}, donated_item.ErrorOpenDonatedItem
 	}
 	status, err := donated_item.NewStatus(donated_item.StatusOpened)
 	if err != nil {
-		return response_donation.DonationItemOpen{}, donated_item.ErrorInvalidStatus
+		return response_donation.DonatedItemOpen{}, donated_item.ErrorInvalidStatus
 	}
 	pickingStatus, err := donated_item.NewPickingStatus(req.PickingStatus)
 	if err != nil {
-		return response_donation.DonationItemOpen{}, donated_item.ErrorInvalidPickingStatus
+		return response_donation.DonatedItemOpen{}, donated_item.ErrorInvalidPickingStatus
 	}
 
 	donatedItemEntity := donated_item.DonatedItem{
@@ -272,14 +272,14 @@ func (s *donationService) OpenDonatedItem(ctx context.Context, donorID string, r
 
 	createdDonatedItem, err := s.donatedItemRepository.Create(ctx, tx, donatedItemEntity)
 	if err != nil {
-		return response_donation.DonationItemOpen{}, donated_item.ErrorOpenDonatedItem
+		return response_donation.DonatedItemOpen{}, donated_item.ErrorOpenDonatedItem
 	}
 
 	for _, reqImage := range req.Images {
 		var imageURL shared.URL
 		imageURL, err = shared.NewURL(reqImage)
 		if err != nil {
-			return response_donation.DonationItemOpen{}, donated_item.ErrorOpenDonatedItem
+			return response_donation.DonatedItemOpen{}, donated_item.ErrorOpenDonatedItem
 		}
 		imageEntity := image.Image{
 			DonatedItemID: createdDonatedItem.ID,
@@ -287,20 +287,20 @@ func (s *donationService) OpenDonatedItem(ctx context.Context, donorID string, r
 		}
 
 		if _, err = s.imageRepository.Create(ctx, tx, imageEntity); err != nil {
-			return response_donation.DonationItemOpen{}, donated_item.ErrorOpenDonatedItem
+			return response_donation.DonatedItemOpen{}, donated_item.ErrorOpenDonatedItem
 		}
 	}
 
 	retrievedDonor, err := s.userRepository.GetUserByID(ctx, tx, createdDonatedItem.DonorID.String())
 	if err != nil {
-		return response_donation.DonationItemOpen{}, user.ErrorGetUserById
+		return response_donation.DonatedItemOpen{}, user.ErrorGetUserById
 	}
 	retrievedCategory, err := s.categoryRepository.GetCategoryByID(ctx, tx, createdDonatedItem.CategoryID.String())
 	if err != nil {
-		return response_donation.DonationItemOpen{}, category.ErrorGetCategoryById
+		return response_donation.DonatedItemOpen{}, category.ErrorGetCategoryById
 	}
 
-	return response_donation.DonationItemOpen{
+	return response_donation.DonatedItemOpen{
 		ID:                  createdDonatedItem.ID.String(),
 		DonorName:           retrievedDonor.Name.FullName(),
 		Status:              createdDonatedItem.Status.Status,
@@ -318,15 +318,15 @@ func (s *donationService) OpenDonatedItem(ctx context.Context, donorID string, r
 	}, nil
 }
 
-func (s *donationService) AcceptDonatedItem(ctx context.Context, req request_donation.DonationItemAccept) (response_donation.DonationItemAccept, error) {
+func (s *donationService) AcceptDonatedItem(ctx context.Context, req request_donation.DonatedItemAccept) (response_donation.DonatedItemAccept, error) {
 	validatedTransaction, err := validation.ValidateTransaction(s.transaction)
 	if err != nil {
-		return response_donation.DonationItemAccept{}, err
+		return response_donation.DonatedItemAccept{}, err
 	}
 
 	tx, err := validatedTransaction.Begin(ctx)
 	if err != nil {
-		return response_donation.DonationItemAccept{}, err
+		return response_donation.DonatedItemAccept{}, err
 	}
 
 	defer func() {
@@ -338,21 +338,21 @@ func (s *donationService) AcceptDonatedItem(ctx context.Context, req request_don
 
 	donatedItemEntity, err := s.donatedItemRepository.GetDonatedItemByID(ctx, tx, req.ID)
 	if err != nil {
-		return response_donation.DonationItemAccept{}, donated_item.ErrorDonatedItemNotFound
+		return response_donation.DonatedItemAccept{}, donated_item.ErrorDonatedItemNotFound
 	}
 
 	if donatedItemEntity.Status.Status != donated_item.StatusOpened {
-		return response_donation.DonationItemAccept{}, donated_item.ErrorInvalidStatusTransition
+		return response_donation.DonatedItemAccept{}, donated_item.ErrorInvalidStatusTransition
 	}
 
 	donatedItemEntity.Status, err = donated_item.NewStatus(donated_item.StatusAccepted)
 	if err != nil {
-		return response_donation.DonationItemAccept{}, donated_item.ErrorInvalidStatus
+		return response_donation.DonatedItemAccept{}, donated_item.ErrorInvalidStatus
 	}
 
 	updatedDonatedItem, err := s.donatedItemRepository.Update(ctx, tx, donatedItemEntity)
 	if err != nil {
-		return response_donation.DonationItemAccept{}, donated_item.ErrorAcceptDonatedItem
+		return response_donation.DonatedItemAccept{}, donated_item.ErrorAcceptDonatedItem
 	}
 
 	donatedItemRecipientEntity := donated_item_recipient.DonatedItemRecipient{
@@ -363,23 +363,23 @@ func (s *donationService) AcceptDonatedItem(ctx context.Context, req request_don
 
 	_, err = s.donatedItemRecipientRepository.Update(ctx, tx, donatedItemRecipientEntity)
 	if err != nil {
-		return response_donation.DonationItemAccept{}, donated_item_recipient.ErrorUpdateDonatedItemRecipient
+		return response_donation.DonatedItemAccept{}, donated_item_recipient.ErrorUpdateDonatedItemRecipient
 	}
 
 	retrievedDonor, err := s.userRepository.GetUserByID(ctx, tx, updatedDonatedItem.DonorID.String())
 	if err != nil {
-		return response_donation.DonationItemAccept{}, user.ErrorGetUserById
+		return response_donation.DonatedItemAccept{}, user.ErrorGetUserById
 	}
 	retrievedRecipient, err := s.userRepository.GetUserByID(ctx, tx, req.RecipientID)
 	if err != nil {
-		return response_donation.DonationItemAccept{}, user.ErrorGetUserById
+		return response_donation.DonatedItemAccept{}, user.ErrorGetUserById
 	}
 	retrievedCategory, err := s.categoryRepository.GetCategoryByID(ctx, tx, updatedDonatedItem.CategoryID.String())
 	if err != nil {
-		return response_donation.DonationItemAccept{}, category.ErrorGetCategoryById
+		return response_donation.DonatedItemAccept{}, category.ErrorGetCategoryById
 	}
 
-	return response_donation.DonationItemAccept{
+	return response_donation.DonatedItemAccept{
 		ID:                  updatedDonatedItem.ID.String(),
 		DonorName:           retrievedDonor.Name.FullName(),
 		RecipientName:       retrievedRecipient.Name.FullName(),

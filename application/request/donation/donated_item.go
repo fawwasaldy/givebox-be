@@ -1,7 +1,7 @@
 package request_donation
 
 type (
-	DonationItemOpen struct {
+	DonatedItemOpen struct {
 		Name                string   `json:"name" form:"name" binding:"required,min=2,max=100"`
 		Description         string   `json:"description" form:"description" binding:"required,max=500"`
 		CategoryID          string   `json:"category_id" form:"category_id" binding:"required,uuid"`
@@ -16,7 +16,7 @@ type (
 		AdditionalNote      string   `json:"additional_note" form:"additional_note" binding:"omitempty,max=500"`
 	}
 
-	DonationItemAccept struct {
+	DonatedItemAccept struct {
 		ID          string `json:"id" form:"id" binding:"required,uuid"`
 		RecipientID string `json:"recipient_id" form:"recipient_id" binding:"required,uuid"`
 	}

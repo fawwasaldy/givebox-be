@@ -92,10 +92,16 @@ func main() {
 		userRepository,
 		transactionRepository)
 
+	analyticService := service.NewAnalyticService(
+		donatedItemRepository,
+		userRepository,
+		transactionRepository)
+
 	// controllers
 	userController := controller.NewUserController(userService)
 	donationController := controller.NewDonationController(donationService)
 	chatController := controller.NewChatController(chatService)
+	analyticController := controller.NewAnalyticController(analyticService)
 
 	defer infrastructure_config.CloseDatabaseConnection(db)
 
@@ -110,6 +116,7 @@ func main() {
 	route.UserRoute(server, userController, jwtService)
 	route.DonationRoute(server, donationController, jwtService)
 	route.ChatRoute(server, chatController, jwtService)
+	route.AnalyticRoute(server, analyticController)
 
 	run(server)
 }

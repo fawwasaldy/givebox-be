@@ -121,7 +121,7 @@ func (c *donationController) GetDonatedItemByID(ctx *gin.Context) {
 }
 
 func (c *donationController) OpenDonatedItem(ctx *gin.Context) {
-	var req request_donation.DonationItemOpen
+	var req request_donation.DonatedItemOpen
 	if err := ctx.ShouldBind(&req); err != nil {
 		res := presentation.BuildResponseFailed(message.FailedGetDataFromBody, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
@@ -142,7 +142,7 @@ func (c *donationController) OpenDonatedItem(ctx *gin.Context) {
 }
 
 func (c *donationController) AcceptDonatedItem(ctx *gin.Context) {
-	var req request_donation.DonationItemAccept
+	var req request_donation.DonatedItemAccept
 	if err := ctx.ShouldBind(&req); err != nil {
 		res := presentation.BuildResponseFailed(message.FailedGetDataFromBody, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)

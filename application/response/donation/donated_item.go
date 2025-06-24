@@ -1,7 +1,7 @@
 package response_donation
 
 type (
-	DonationItem struct {
+	DonatedItem struct {
 		ID          string `json:"id"`
 		DonorName   string `json:"donor_name"`
 		Name        string `json:"name"`
@@ -13,7 +13,7 @@ type (
 		CreatedAt   string `json:"created_at"`
 	}
 
-	DetailedDonationItem struct {
+	DetailedDonatedItem struct {
 		ID                  string `json:"id"`
 		DonorName           string `json:"donor_name"`
 		Name                string `json:"name"`
@@ -29,7 +29,7 @@ type (
 		AdditionalNote      string `json:"additional_note,omitempty"`
 	}
 
-	DonationItemOpen struct {
+	DonatedItemOpen struct {
 		ID                  string `json:"id"`
 		DonorName           string `json:"donor_name"`
 		Status              string `json:"status"`
@@ -46,7 +46,7 @@ type (
 		AdditionalNote      string `json:"additional_note,omitempty"`
 	}
 
-	DonationItemAccept struct {
+	DonatedItemAccept struct {
 		ID                  string `json:"id"`
 		DonorName           string `json:"donor_name,omitempty"`
 		RecipientName       string `json:"recipient_name,omitempty"`
