@@ -6,7 +6,19 @@ import (
 )
 
 func Seeder(db *gorm.DB) error {
-	if err := seeds.Category(db); err != nil {
+	//if err := seeds.Category(db); err != nil {
+	//	return err
+	//}
+
+	if err := seeds.User(db); err != nil {
+		return err
+	}
+
+	if err := seeds.DonatedItem(db); err != nil {
+		return err
+	}
+
+	if err := seeds.Image(db); err != nil {
 		return err
 	}
 
